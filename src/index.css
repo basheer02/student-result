@@ -1,0 +1,7 @@
+#root {
+    background-color: rgb(17, 24, 39)
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
