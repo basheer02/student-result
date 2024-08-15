@@ -14,15 +14,19 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@tanstack/react-table": "^8.19.3",
     "antd": "^5.19.3",
+    "base64-stream": "^1.0.0",
     "date-fns": "^3.6.0",
     "firebase": "^10.12.3",
+    "fontkit": "^2.0.2",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
     "react": "^18.3.1",
     "react-date-picker": "^11.0.0",
     "react-datepicker": "^7.3.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.25.1",
     "react-toastify": "^10.0.5",
-    "rsuite": "^5.67.0"
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
