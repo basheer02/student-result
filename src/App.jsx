@@ -13,14 +13,14 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
 
   const location = useLocation();
-  const { userData, admNumber } = location.state || {};
+  const { studentData, admNumber } = location.state || {};
 
-  console.log();
+  //console.log(studentData);
 
   /**toast.success('Login Successfull', {
     autoClose: 2000,
@@ -28,20 +28,20 @@ function App() {
     hideProgressBar: false,
   });*/
 
-  const subjects = classSubjects[userData.class];
+  const subjects = classSubjects[studentData.class];
+
+  for(const sub of subjects){
+    if(studentData[sub] === 'A'){
+      studentData[sub] = 'Absent';
+    }
+  }
   
   const status = () => {
-    if(+userData.rank === 1){
-      return '1st'
-    } 
-    if(+userData.rank === 2){
-      return '2nd'
+    const st = subjects.some(subject => +studentData[subject] < 18 || studentData[subject] === 'Absent');
+    if(st){
+      return 'FAIL'
     }
-    if(+userData.rank === 3){
-      return '3rd'
-    }
-
-    return userData.rank
+    return 'PASS'
   }
 
   const schoolName = 'SUBULULHUDA HIGHER SECONDARY MADRASA';
@@ -67,8 +67,8 @@ function App() {
     // Student details
     const studentDetails = [
       ['Admission Number', admNumber],
-      ['Class', userData.class],
-      ['Student Name', userData.name]
+      ['Class', studentData.class],
+      ['Student Name', studentData.name]
     ];
 
     let startY = 50;
@@ -101,7 +101,7 @@ function App() {
     // Subjects and marks
     const subjectRows = subjects.map((subject) => [
       (sub[subject] || subject).toUpperCase(),
-      userData[subject]
+      studentData[subject]
     ]);
 
     doc.autoTable({
@@ -118,9 +118,11 @@ function App() {
       margin: { left: marginLeft, right: marginLeft }
     });
 
+    
+
     const totalMark = [
-      ['TOTAL MARK', userData['total mark']],
-      [status() === 'failed' ? 'STATUS' : 'RANK', status()]
+      ['TOTAL MARK', studentData['total mark']],
+      ['STATUS', status()]
     ]
 
     startY = doc.lastAutoTable.finalY + 5;
@@ -139,7 +141,7 @@ function App() {
     });
   
     // Save the PDF
-    doc.save(`${userData.name}_marklist.pdf`);
+    doc.save(`${studentData.name}_marklist.pdf`);
     toast('Mark list download has started',{
       type: 'success',
       position: 'bottom-center',
@@ -153,20 +155,23 @@ function App() {
     })
   };
 
-
-
-
-  const GridItem = ({ title, value }) => (
+  const gridItem = ({ title, value }) => (
     <div className="grid grid-cols-2 bg-gray-100 px-4 p-2 shadow-md">
       <div className="pr-4 pt-2 border-r border-gray-400">
         <h3 className="text-sm text-gray-900 font-semibold break-words">{title}</h3>
       </div>
       <div className="pl-4">
-        <h3 className="mt-2 text-base text-gray-900 font-semibold break-words">{value}</h3>
+        <h3 className="mt-2 text-sm text-gray-900 font-semibold break-words">{value}</h3>
       </div>
     </div>
   );
 
+  const TableItem = ({ title, value, textPos = '', textColor = 'text-gray-900' }) => (
+    <tr className="border-b border-gray-300">
+      <td className={`w-1/2 ${textPos} text-sm text-gray-900 font-semibold border-r border-gray-300 p-2`}>{title}</td>
+      <td className={`w-1/2 ${textPos} text-sm font-semibold break-words p-2 ${textColor}`}>{value}</td>
+    </tr>
+  );
 
   return (
     <>
@@ -179,21 +184,40 @@ function App() {
         </div>
       </div>
       <div className='mt-8 grid p-4 bg-white w-full rounded-lg mt-4 py-2'>
-        <GridItem title="ADMISSION NO." value={admNumber} />
-        <GridItem title="CLASS" value={userData.class} />
-        <GridItem title="NAME" value={userData.name} />
-        <GridItem title="ATTENDANCE" value={userData.attendance}/>
+        <table className="w-full mt-4 mb-4 border-spacing-0 bg-gray-100 shadow-md border border-gray-300 rounded-lg">
+          <tbody>
+            <TableItem title="Admission no." value={admNumber}/>
+            <TableItem title="Class" value={studentData.class}/>
+            <TableItem title="Name" value={studentData.name}/>
+            <TableItem title="Attendance" value={studentData.attendance}/>
+          </tbody>
+        </table>
       </div>
       <div className='mt-1 overflow-y-auto overflow-hidden p-4 bg-white w-full rounded-lg py-2'>
         <h2 className='mt-2 mb-3 text-gray-900 text-lg text-center font-bold'>Mark List</h2>
-        {subjects.map((subject, index) => (
-          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-          <GridItem key={index} title={malayalamText[subject]} value={userData[subject]} />
-        ))}
-        <GridItem title='TOTAL MARK' value={userData['total mark']} />
+        <table className="w-full mt-4 mb-4 border-spacing-0 bg-gray-100 shadow-md border rounded-lg border-gray-300">
+        <thead>
+          <tr className="border-b border-gray-300 bg-gray-300">
+            <th className="text-center text-gray-900 font-semibold p-2">Subject</th>
+            <th className="text-center text-gray-900 font-semibold p-2">Mark</th>
+          </tr>
+        </thead>
+        <tbody>
+          {subjects.map((subject, index) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+            <TableItem key={index} title={malayalamText[subject]} value={studentData[subject]} textPos='text-center'/>
+          ))}
+        </tbody>
+      </table>
       </div>
-      <div className='flex flex-col bg-white w-full rounded-lg shadow-md mt-3 py-1'>
-        <h2 className={`mt-2 mb-3 text-lg text-center font-bold ${status() === 'Failed' ? 'text-red-900' : 'text-green-900'}`}>{status() === 'failed' ? 'Status' : 'Rank'} - {status()}</h2>
+      <div className='flex flex-col bg-white w-full rounded-lg shadow-md mt-2 py-1 p-3'>
+        {/*<h2 className={`mt-2 mb-3 text-lg text-center font-bold ${status() === 'FAIL' ? 'text-red-900' : 'text-green-900'}`}>Status - {status()}</h2>*/}
+        <table className="w-full mt-4 mb-4 border-spacing-0 bg-gray-100 shadow-md border rounded-lg border-gray-300">
+        <tbody>
+          <TableItem title='Total Mark' value={studentData['total mark']} textPos='text-center' />
+          <TableItem title='Status' value={status()} textPos='text-center' textColor={status() === 'FAIL' ? 'text-red-900' : 'text-green-900'}/>
+        </tbody>
+        </table>
       </div>
       <ToastContainer style={{ padding: '16px',}}/>
     </div>

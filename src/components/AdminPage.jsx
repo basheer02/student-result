@@ -226,11 +226,9 @@ export default function AdminPage() {
         return;
       }
 
-      const toastId = toast('student data uploading...', {
+      toast.loading('student data uploading...', {
         position: 'bottom-center',
-        type: 'info',
-        hideProgressBar: false,
-        progress: 0.1,
+        hideProgressBar: true,
         closeButton: false,
         theme: 'dark',                                                              
         style: {
@@ -261,53 +259,45 @@ export default function AdminPage() {
         
 
         try {
-          const totalRows = jsonData.length;
-          let processedRows = 0;                                                              
+          const totalRows = jsonData.length;                                                              
           let existingRows = 0;
 
           for(const row of jsonData) {
             const totalMarks = subjects.reduce((acc, subject) => acc + (+row[subject] || 0), 0);
             row["total mark"] = totalMarks;
             row.class = clas;
-            const docId = String(row[header[0]]);
-            const { [header[0]]:_ , ...rowDataWithoutId } = row;
+            const docId = String(row.id);
+            const { id, ...rowDataWithoutId } = row;
+
+            console.log(rowDataWithoutId);
 
 
             const docRef = doc(db, 'subululhuda', docId);
             const docExists = await getDoc(docRef);
-
             if(docExists.exists()){
               existingRows++;
-              toast.update(toastId, {
-                render: `Adm. No ${docId} data already exists`,
-                type: 'error',
-              });
-              await new Promise(resolve => setTimeout(resolve, 500));
-            } else {
+            }else {
               await setDoc(docRef, rowDataWithoutId);
               setData(prevData => [...prevData, row]);
             }
 
-            processedRows++;
-            const progress = Math.round((processedRows / totalRows) * 100);
-
-            toast.update(toastId, {
-              render: `Processing: ${progress}%`,
-              progress: processedRows / totalRows,
-            });
-
           };
+
+          toast.dismiss();
           
           if (totalRows !== existingRows) {
 
             if(error){
               setError('');
             }
-            toast.update(toastId, {
-              render: 'Student data successfully uploaded',
-              type: 'success',
-              hideProgressBar:true,
-              autoClose: 1000,
+            toast.success('student data succefully uploaded', {
+              position: 'bottom-center',
+              hideProgressBar: true,
+              closeButton: false,
+              theme: 'dark',                                                              
+              style: {
+                  borderRadius: '10px',
+              },
             });
 
             if(data.length+totalRows === studentCount[clas]){
@@ -326,24 +316,31 @@ export default function AdminPage() {
             }
             
           } else {
-            toast.update(toastId, {
-              render: 'All data already exists',
-              type: 'error',
-              hideProgressBar:true,
-              autoClose: 2000,
+            toast.success('All data already exists', {
+              position: 'bottom-center',
+              hideProgressBar: true,
+              closeButton: false,
+              theme: 'dark',  
+              autoClose: 2000,                                                            
+              style: {
+                  borderRadius: '10px',
+              },
             });
           }
-          fileRef.current.value = '';
           setTimeout(() => {
-            toast.done(toastId);
+            fileRef.current.value = '';
           }, 1000);
         } catch (error) {
           console.log(error);
-          toast.update(toastId, {
-            render: 'Error in uploading student data, try again',
-            type: 'error',
-            hideProgressBar:true,
-            autoClose: 2000,
+          toast.error('Error in uploading student data, try again', {
+            position: 'bottom-center',
+            hideProgressBar: true,
+            closeButton: false,
+            theme: 'dark', 
+            autoClose: 2000,                                                             
+            style: {
+                borderRadius: '10px',
+            },
           });
         }
       };
@@ -368,12 +365,14 @@ export default function AdminPage() {
           })
       } else {
         const doc = new jsPDF();
-        let cols = ['id', 'name']
+        let cols = ['id', 'name', 'attendance']
         // biome-ignore lint/complexity/noForEach: <explanation>
         Object.values(subjects).forEach(value => cols.push(value));
-        
+        cols.push('total mark', 'rank')
+        console.log(cols);
         const rows = Object.values(data).map(obj => cols.map(key => obj[key]))
         cols[0] = 'Admission No.'
+        cols[2] = 'hajar'
         cols = cols.map(str => str.toUpperCase());
         
         doc.autoTable({
@@ -521,7 +520,7 @@ export default function AdminPage() {
                                 <label>{sub.toUpperCase()}</label>
                                 <input
                                   className='rounded-lg bg-gray-200 mt-1 p-2 focus:border-blue-500 text-gray-900 focus:outline-none'
-                                  type="number"
+                                  type="text"
                                   id={sub}
                                   onChange={(e) => {studentData[`${sub}`] = e.target.value} }
                                   required

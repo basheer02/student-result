@@ -53,7 +53,7 @@ export const studentCount = {
 export const updateRank = async (data, cl) => {
 
   for (const student of data) {
-    if (classSubjects[cl].some(subject => +student[subject] < 18)) {
+    if (classSubjects[cl].some(subject => +student[subject] < 18 || student[subject] === 'A')) {
       student.rank = 'failed';
     }
   }

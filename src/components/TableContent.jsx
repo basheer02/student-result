@@ -28,8 +28,8 @@ const TableComponent = ({ columns, data }) => {
               {headerGroup.headers.map(header => (
                 <th
                   key={header.id}
-                  className="px-6 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider"
-                  style={{ fontFamily: 'Liberation Mono, monospace' }}
+                  className="px-6 py-3 text-center text-xs font-bold text-gray-500 bg-gray-50 uppercase tracking-wider"
+                  style={{ fontFamily: 'Liberation Mono, monospace', position: 'sticky', zIndex:1, top: 0 }}
                 >
                   {flexRender(header.column.columnDef.header, header.getContext())}
                 </th>

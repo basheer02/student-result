@@ -72,7 +72,7 @@ export default function LoginPage(){
 
     try {
       const snapDoc = await fetchDataFromFirestore(admNumber);
-      const userData = snapDoc.data();
+      const studentData = snapDoc.data();
 
       if(!snapDoc.exists()){
        // document.getElementById('regNumber').focus();
@@ -92,7 +92,7 @@ export default function LoginPage(){
           onClose: () => {
               navigate('/home', {
                 state: {
-                  userData,
+                  studentData,
                   admNumber: admNumber,
                 }
               });
