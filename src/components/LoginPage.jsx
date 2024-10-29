@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
-import loginImg from '../../public/madrasa.jpeg'; // Make sure to replace this with the actual path to your image                                                                                            
+import loginImg from '/madrasa.jpeg'; // Make sure to replace this with the actual path to your image                                                                                            
 
 
 import { useNavigate } from 'react-router-dom';

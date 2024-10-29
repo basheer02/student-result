@@ -441,7 +441,7 @@ export default function AdminPage() {
             /></div>}
 
             {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-            <button className='w-full py-3 my-2 bg-teal-500 shadow-md shadow-teal-500/50 hover:shadow-teal-500/40 text-white font-semibold rounded-lg'
+            {data.length !== studentCount[clas] && <button className='w-full py-3 my-2 bg-teal-500 shadow-md shadow-teal-500/50 hover:shadow-teal-500/40 text-white font-semibold rounded-lg'
             onClick = { () => {
               if(data.length === studentCount[clas]){
                 toast('All student data already uploaded', {
@@ -459,7 +459,7 @@ export default function AdminPage() {
                 handleOpenModal();
               }
             }}
-            >Add student data manually</button>
+            >Add student data manually</button>}
             {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
             <button className='w-full py-3 bg-teal-500 shadow-md shadow-teal-500/50 hover:shadow-teal-500/40 text-white font-semibold rounded-lg'
             onClick={handleEditOpenModal}

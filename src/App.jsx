@@ -39,9 +39,9 @@ function App() {
   const status = () => {
     const st = subjects.some(subject => +studentData[subject] < 18 || studentData[subject] === 'Absent');
     if(st){
-      return 'FAIL'
+      return 'FAILED'
     }
-    return 'PASS'
+    return 'PASSED'
   }
 
   const schoolName = 'SUBULULHUDA HIGHER SECONDARY MADRASA';
@@ -215,7 +215,7 @@ function App() {
         <table className="w-full mt-4 mb-4 border-spacing-0 bg-gray-100 shadow-md border rounded-lg border-gray-300">
         <tbody>
           <TableItem title='Total Mark' value={studentData['total mark']} textPos='text-center' />
-          <TableItem title='Status' value={status()} textPos='text-center' textColor={status() === 'FAIL' ? 'text-red-900' : 'text-green-900'}/>
+          <TableItem title='Status' value={status()} textPos='text-center' textColor={status() === 'FAILED' ? 'text-red-900' : 'text-green-900'}/>
         </tbody>
         </table>
       </div>
