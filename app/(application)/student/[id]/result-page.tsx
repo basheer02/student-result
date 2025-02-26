@@ -145,7 +145,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 					Examination Result
 				</h2>
 			</div>
-			<div className="mt-8 grid p-4 bg-white w-full rounded-lg mt-4 py-2">
+			<div className="flex mt-8 grid p-4 bg-white w-full rounded-lg mt-4 py-2">
 				<table className="w-full mt-4 mb-4 border-spacing-0 bg-gray-100 shadow-md border border-gray-300 rounded-lg">
 					<tbody>
 						<TableItem
