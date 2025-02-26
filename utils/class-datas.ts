@@ -1,9 +1,3 @@
-
-
-import type { Student } from "@/types";
-import { db } from "./db";
-import { setDoc, doc } from "firebase/firestore";
-
 export const classSubjects: Record<number, string[]> = {
 	1: ["writing", "reading"],
 	2: ["quran", "hifl", "fiqh", "aqeeda", "lis_quran", "aqlaq"],
@@ -37,8 +31,8 @@ export const classSubjects: Record<number, string[]> = {
 		"tariq",
 		"tajvid",
 	],
-	6: ["qur'an", "hifl", "fiqh", "tariq", "dur ihsan", "lis_quran"],
-	7: ["qur'an", "hifl", "fiqh", "tariq", "dur ihsan", "lis_quran"],
+	6: ["quran", "hifl", "fiqh", "tariq", "dur_ihsan", "lis_quran"],
+	7: ["quran", "hifl", "fiqh", "tariq", "dur_ihsan", "lis_quran"],
 	8: ["fiqh", "tariq", "dur_ihsan", "lis_quran"],
 	9: ["fiqh", "tariq", "dur_ihsan", "lis_quran"],
 	10: ["fiqh", "tafsir", "dur_ihsan", "lis_quran"],

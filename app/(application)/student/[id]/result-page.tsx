@@ -1,7 +1,6 @@
 "use client";
 import { Download } from "lucide-react";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
 import { classSubjects, malayalamText, subjectText } from "@/utils/class-datas";
 import type { Student } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -80,8 +79,8 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			margin: { left: marginLeft, right: marginLeft },
 		});
 
-		startY = doc.lastAutoTable.finalY + 10;
-
+		startY = 85;
+		
 		// Subjects and marks
 		const subjectRows = subjects.map((subject) => [
 			subjectText[subject].toUpperCase(),
@@ -106,8 +105,16 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			["TOTAL MARK", studentData.total_mark],
 			["STATUS", studentData.status],
 		];
-
-		startY = doc.lastAutoTable.finalY + 5;
+		
+		if (subjects.length === 2) {
+			startY = 113;
+		} else if (subjects.length === 4) {
+			startY = 128;
+		} else if (subjects.length === 6) {
+			startY = 143;
+		} else if (subjects.length === 8) {
+			startY = 158;
+		}
 
 		autoTable(doc, {
 			startY,
