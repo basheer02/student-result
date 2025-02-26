@@ -1,0 +1,22 @@
+export type Student = {
+		id: string;
+		admission_number: string;
+		name: string;
+		class: number | string;
+		attendance: number | string;
+		status: string;
+		rank: number;
+		total_mark: number;
+		reading?: number | string;
+		writing?: number | string;
+		quran?: number | string;
+		hifl?: number | string;
+		fiqh?: number | string;
+		aqeeda?: number | string;
+		lis_quran?: number | string;
+		aqlaq?: number | string;
+		tariq?: number | string;
+		tajveed?: number | string;
+		dur_ihsan?: number | string;
+		tafseer?: number | string;
+	};
