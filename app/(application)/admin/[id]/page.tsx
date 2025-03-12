@@ -4,6 +4,7 @@ import { getClassData } from "@/utils/actions";
 import { classSubjects } from "@/utils/class-datas";
 import type { ColumnDef } from "@tanstack/react-table";
 import TableContent from "./table-content";
+import { Button } from "@/components/ui/button";
 
 
 export default async function Page({
@@ -63,6 +64,9 @@ export default async function Page({
 
 		return (
 			<main className="w-full h-screen">
+				<h3 className="p-2 mt-2 text-2xl text-white font-bold text-center">
+					SUBULULHUDA HIGHER SECONDARY MADRASA
+				</h3>
 				<TableContent
 					classData={classData}
 					columns={columns}

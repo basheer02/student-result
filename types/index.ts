@@ -1,6 +1,6 @@
 export type Student = {
 		id: string;
-		admission_number: string;
+		admission_number: string | number;
 		name: string;
 		class: number | string;
 		attendance: number | string;

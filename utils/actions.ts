@@ -17,7 +17,7 @@ async function getStudentDataByID(selectedClass: string, reg: string) {
 	try {
 		const q = query(
 			collection(db, selectedClass),
-			where("admission_number", "==", `${reg}`),
+			where("admission_number", "==", Number(reg)),
 		);
 		const snapDoc = await getDocs(q);
 		// const dataList = snapDoc.docs.map((doc) => ({

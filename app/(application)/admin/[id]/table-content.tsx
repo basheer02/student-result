@@ -23,6 +23,16 @@ import { classSubjects, studentCount } from "@/utils/class-datas";
 import { addStudentData, updateStudent } from "@/utils/actions";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import {
+	ChevronRightIcon,
+	Download,
+	LogOut,
+	User,
+	UserCog,
+} from "lucide-react";
+import { redirect } from "next/navigation";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 //import { saveAs } from "file-saver";
 
 export default function TableContent({
@@ -38,11 +48,20 @@ export default function TableContent({
 	const [selectedStudent, setSelectedStudent] = useState<Student | null>();
 	const [showStudentForm, setshowStudentForm] = useState(false);
 
-	data.sort((a,b) => {
-		if(a.status === "failed") return 1;
-		if(b.status === "failed") return -1;
+	const [isOpen, setIsOpen] = useState(false);
+
+	const toggleDropdown = () => setIsOpen(!isOpen);
+	const signOut = () => {
+		console.log("Signing out...");
+		redirect("/");
+		// Add your sign-out logic here
+	};
+
+	data.sort((a, b) => {
+		if (a.status === "failed") return 1;
+		if (b.status === "failed") return -1;
 		return a.rank - b.rank;
-	})
+	});
 
 	const table = useReactTable({
 		data: data,
@@ -62,6 +81,7 @@ export default function TableContent({
 		const formData = new FormData(e.currentTarget);
 		const updatedData: Partial<Student> = {
 			attendance: Number(formData.get("attendance")),
+			name: formData.get("name") as string,
 			...Object.fromEntries(
 				subjects.map((subject) => [subject, Number(formData.get(subject))]),
 			),
@@ -94,9 +114,11 @@ export default function TableContent({
 					selectedStudent.id,
 					updatedData,
 				);
-				
-				const isUpdateRank = !(selectedStudent.status === "failed" && status === "failed")
-				
+
+				const isUpdateRank = !(
+					selectedStudent.status === "failed" && status === "failed"
+				);
+
 				if (isUpdateRank) {
 					const newData = data.map((student) =>
 						student.id === selectedStudent.id
@@ -106,8 +128,11 @@ export default function TableContent({
 
 					const success = await updateRank("update", newData);
 
-					if(success){
-						toast.success("Update successful!", { id: toastId, duration: 2000 });
+					if (success) {
+						toast.success("Update successful!", {
+							id: toastId,
+							duration: 2000,
+						});
 						setshowStudentForm(false);
 					} else {
 						toast.error("Update failed!, try again", {
@@ -126,10 +151,8 @@ export default function TableContent({
 					toast.success("Update successful!", { id: toastId, duration: 2000 });
 					setshowStudentForm(false);
 				}
-
-				
 			} catch (error) {
-				console.log(error)
+				console.log(error);
 				toast.error("Update failed!, try again", {
 					id: toastId,
 					duration: 2000,
@@ -139,7 +162,6 @@ export default function TableContent({
 	};
 
 	const updateRank = async (addOrUpdate: string, studentData: Student[]) => {
-
 		//console.log(studentData)
 
 		const passedStudents = studentData.filter(
@@ -272,6 +294,26 @@ export default function TableContent({
 		}
 	};
 
+	const downloadPDF = () => {
+		const toastId = toast.loading("Downloading student data...");
+		const doc = new jsPDF();
+		const cols = ["no.","admission_number", "name", "attendance"];
+		// biome-ignore lint/complexity/noForEach: <explanation>
+		Object.values(subjects).forEach((value) => cols.push(value));
+		cols.push("total_mark", "rank");
+		const rows = Object.values(data).map((obj, index) => [
+			index + 1,
+			...cols.slice(1).map((key) => obj[key as keyof Student] ?? ""),
+		]);
+		
+		autoTable(doc, {
+			head: [cols],
+			body: rows,
+		});
+		doc.save(`Class_${selectedClass}_data.pdf`);
+		toast.success("Download successful!", { id: toastId, duration: 2000 });
+	};
+
 	// async function exportToExcel() {
 	// 	try {
 	// 		// Create a worksheet and workbook
@@ -296,14 +338,70 @@ export default function TableContent({
 
 	return (
 		<div className="flex flex-col w-full h-full shadow-md mx-auto p-4">
-			<div className="bg-white w-full items-center justify-center rounded-lg p-2 mt-2">
-				<p className="text-gray-900 text-center text-lg font-bold">
-					Class : {selectedClass}
-				</p>
-				<p className="text-gray-900 text-center text-lg font-bold">
-					Total students : {data.length}
-				</p>
+			<div className="absolute top-4 right-4 z-50">
+				<Button
+					variant={"ghost"}
+					className="bg-gray-200 hover:bg-gray-200"
+					onClick={toggleDropdown}
+				>
+					<ChevronRightIcon
+						className={`mr-2 text-gray-900 transition-transform duration-300 ${isOpen ? "md:rotate-90 -rotate-90" : "rotate-0"}`}
+						size={20}
+					/>
+					<UserCog className="text-gray-900" size={24} />
+					<span className="mr-2 ml-2 font-bold text-gray-900">{`class-${selectedClass}`}</span>
+				</Button>
+				{isOpen && (
+					<div className="absolute bg-gray-200">
+						<Button
+							variant={"ghost"}
+							className="bg-gray-200 rounded hover:bg-gray-200"
+							onClick={downloadPDF}
+						>
+							<Download className="ml-4 text-gray-900" size={24} />
+							<span className="mr-2 ml-2 text-gray-900">Download</span>
+						</Button>
+						<Button
+							variant={"ghost"}
+							className="bg-gray-200 hover:bg-gray-200"
+							onClick={signOut}
+						>
+							<LogOut className="ml-4 text-gray-900" size={24} />
+							<span className="mr-2 ml-2 text-gray-900">Logout</span>
+						</Button>
+					</div>
+				)}
 			</div>
+			{/* <aside className="absolute top-4 right-4 bg-gray-800 text-white z-50">
+				<Button
+					className="bg-gray-100 hover:bg-gray-100"
+					onClick={toggleDropdown}
+				>
+					<ChevronRightIcon
+						className={`mr-2 text-gray-900 transition-transform duration-300 ${isOpen ? "md:rotate-90 -rotate-90" : "rotate-0"}`}
+						size={20}
+					/>
+					<UserCog className="text-gray-900" size={24} />
+					<span className="mr-2 ml-2 font-bold text-gray-900">{`class-${selectedClass}`}</span>
+				</Button>
+				{isOpen && (
+					<div>
+						<Button className="py-2 px-3 hover:bg-gray-700">
+							<UserCog className="text-gray-100" size={24} />
+							<span className="mr-2 ml-2 font-bold text-gray-100">
+								Download data
+							</span>
+						</Button>
+						<Button
+							className="py-2 px-3 hover:bg-gray-700"
+							onClick={signOut}
+						>
+							<UserCog className="text-gray-100" size={24} />
+							<span>Logout</span>
+						</Button>
+					</div>
+				)}
+			</aside> */}
 			<div className="flex w-full bg-white border shadow-md mt-3 max-h-[calc(100vh-220px)]">
 				<Table>
 					<TableHeader>
@@ -363,6 +461,9 @@ export default function TableContent({
 					</TableBody>
 				</Table>
 			</div>
+			<div className="p-3">
+				<span className="text-gray-200">{`Total student data added : ${data.length}/${studentCount[Number(selectedClass)]}`}</span>
+			</div>
 			{uploadButton && (
 				<div className="m-4">
 					<div className="flex">
@@ -412,10 +513,11 @@ export default function TableContent({
 								/>
 							</div>
 							<div className="p-2">
+								<Label htmlFor="name">Name</Label>
 								<Input
 									type="text"
-									value={`Name : ${selectedStudent?.name}`}
-									disabled
+									defaultValue={selectedStudent?.name}
+									name="name"
 								/>
 							</div>
 							<div className="p-2">
