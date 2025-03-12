@@ -23,7 +23,14 @@ import { classSubjects, studentCount } from "@/utils/class-datas";
 import { addStudentData, updateStudent } from "@/utils/actions";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import { ChevronRightIcon, Download, LogOut, UserCog } from "lucide-react";
+import {
+	AlertCircle,
+	CheckCircle,
+	ChevronRightIcon,
+	Download,
+	LogOut,
+	UserCog,
+} from "lucide-react";
 import { redirect } from "next/navigation";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -191,6 +198,15 @@ export default function TableContent({
 					JSON.parse(JSON.stringify(formattedStudentData)),
 					addOrUpdate,
 				);
+
+				if (data.length !== 0) { // if data already exists, update ranks
+					const dataToUpdate = [...data,...res];
+					const success = await updateRank("update", dataToUpdate);
+					if (success) {
+						return true;
+					} 
+					return false
+				} 
 				setData(res);
 				return true;
 			}
@@ -289,23 +305,46 @@ export default function TableContent({
 	};
 
 	const downloadPDF = () => {
-		const toastId = toast.loading("Downloading student data...");
-		const doc = new jsPDF();
-		const cols = ["no.", "admission_number", "name", "attendance"];
-		// biome-ignore lint/complexity/noForEach: <explanation>
-		Object.values(subjects).forEach((value) => cols.push(value));
-		cols.push("total_mark", "rank");
-		const rows = Object.values(data).map((obj, index) => [
-			index + 1,
-			...cols.slice(1).map((key) => obj[key as keyof Student] ?? ""),
-		]);
+		setIsOpen(false);
+		if (data.length === 0) {
+			toast.error("No data to download!");
+		} else {
+			const toastId = toast.loading("Downloading student data...");
+			const doc = new jsPDF();
+			const cols = ["no", "admission_number", "name", "attendance"];
+			// biome-ignore lint/complexity/noForEach: <explanation>
+			Object.values(subjects).forEach((value) => cols.push(value));
+			cols.push("total_mark", "rank");
+			const rows = Object.values(data).map((obj, index) => [
+				index + 1,
+				...cols.slice(1).map((key) => String(obj[key as keyof Student] ?? "")),
+			]);
+			cols[1] = "adm_no";
+			cols[3] = "hajar";
+			cols[cols.length - 2] = "total";
 
-		autoTable(doc, {
-			head: [cols],
-			body: rows,
-		});
-		doc.save(`Class_${selectedClass}_data.pdf`);
-		toast.success("Download successful!", { id: toastId, duration: 2000 });
+			const text = ` Total students : ${data.length}/${studentCount[Number(selectedClass)]}`;
+			doc.setFontSize(12);
+			doc.text(` Class-${selectedClass}`, 12, 10, { align: "left" });
+			doc.text(text, 12, 14, { align: "left" });
+
+			autoTable(doc, {
+				head: [cols],
+				body: rows,
+				margin: { top: 20 },
+				styles: { cellPadding: 2, fontSize: 8 },
+				tableWidth: "wrap",
+				showHead: "everyPage",
+				theme: "grid",
+			});
+			// autoTable(doc, {
+			// 	head: [cols],
+			// 	body: rows,
+			// });
+			
+			doc.save(`Class_${selectedClass}_data.pdf`);
+			toast.success("Download successful!", { id: toastId, duration: 2000 });
+		}
 	};
 
 	// async function exportToExcel() {
@@ -331,7 +370,7 @@ export default function TableContent({
 	// }
 
 	return (
-		<div className="flex flex-col w-full h-full shadow-md mx-auto p-4">
+		<div className="flex flex-col w-full shadow-md mx-auto p-4">
 			<div className="absolute top-4 right-4 z-50">
 				<Button
 					variant={"ghost"}
@@ -339,7 +378,7 @@ export default function TableContent({
 					onClick={toggleDropdown}
 				>
 					<ChevronRightIcon
-						className={`mr-2 text-gray-900 transition-transform duration-300 ${isOpen ? "md:rotate-90 -rotate-90" : "rotate-0"}`}
+						className={`mr-2 text-gray-900 transition-transform duration-300 ${isOpen ? "rotate-90" : "rotate-0"}`}
 						size={20}
 					/>
 					<UserCog className="text-gray-900" size={24} />
@@ -366,37 +405,7 @@ export default function TableContent({
 					</div>
 				)}
 			</div>
-			{/* <aside className="absolute top-4 right-4 bg-gray-800 text-white z-50">
-				<Button
-					className="bg-gray-100 hover:bg-gray-100"
-					onClick={toggleDropdown}
-				>
-					<ChevronRightIcon
-						className={`mr-2 text-gray-900 transition-transform duration-300 ${isOpen ? "md:rotate-90 -rotate-90" : "rotate-0"}`}
-						size={20}
-					/>
-					<UserCog className="text-gray-900" size={24} />
-					<span className="mr-2 ml-2 font-bold text-gray-900">{`class-${selectedClass}`}</span>
-				</Button>
-				{isOpen && (
-					<div>
-						<Button className="py-2 px-3 hover:bg-gray-700">
-							<UserCog className="text-gray-100" size={24} />
-							<span className="mr-2 ml-2 font-bold text-gray-100">
-								Download data
-							</span>
-						</Button>
-						<Button
-							className="py-2 px-3 hover:bg-gray-700"
-							onClick={signOut}
-						>
-							<UserCog className="text-gray-100" size={24} />
-							<span>Logout</span>
-						</Button>
-					</div>
-				)}
-			</aside> */}
-			<div className="flex w-full bg-white border shadow-md mt-3 max-h-[calc(100vh-220px)]">
+			<div className="flex w-full bg-white border shadow-md max-h-[calc(100vh-200px)]">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
@@ -432,12 +441,20 @@ export default function TableContent({
 												setshowStudentForm(true);
 											}}
 										>
-											{cell.column.id === "sl_no"
-												? index + 1
-												: flexRender(
-														cell.column.columnDef.cell,
-														cell.getContext(),
-													)}
+											{cell.column.id === "sl_no" ? (
+												index + 1
+											) : cell.column.id === "status" ? (
+												<span
+													className={`${data[index].status === "failed" ? "text-red-700" : "text-green-700"}`}
+												>
+													{data[index].status}
+												</span>
+											) : (
+												flexRender(
+													cell.column.columnDef.cell,
+													cell.getContext(),
+												)
+											)}
 										</TableCell>
 									))}
 								</TableRow>
@@ -455,14 +472,21 @@ export default function TableContent({
 					</TableBody>
 				</Table>
 			</div>
-			<div className="p-3">
+			<div className="p-3 flex">
 				<span className="text-gray-200">{`Total student data added : ${data.length}/${studentCount[Number(selectedClass)]}`}</span>
+				{data.length === studentCount[Number(selectedClass)] ? (
+					<CheckCircle size={24} className="h-4 w-4 m-1 ml-4" color="green" />
+				) : (
+					<AlertCircle size={24} className="h-4 w-4 m-1 ml-4" color="red" />
+				)}
 			</div>
 			{uploadButton && (
-				<div className="m-4">
+				<div className="m-2">
 					<div className="flex">
 						<div>
-							<p className="text-white m-2 font-semibold">Excel</p>
+							<p className="text-white m-2 font-semibold w-[110px]">
+								Upload data
+							</p>
 						</div>
 						<Input
 							type="file"
