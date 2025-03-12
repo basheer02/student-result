@@ -4,7 +4,6 @@ import { getClassData } from "@/utils/actions";
 import { classSubjects } from "@/utils/class-datas";
 import type { ColumnDef } from "@tanstack/react-table";
 import TableContent from "./table-content";
-import { Button } from "@/components/ui/button";
 
 
 export default async function Page({

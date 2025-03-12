@@ -27,7 +27,6 @@ import {
 	ChevronRightIcon,
 	Download,
 	LogOut,
-	User,
 	UserCog,
 } from "lucide-react";
 import { redirect } from "next/navigation";
@@ -305,7 +304,7 @@ export default function TableContent({
 			index + 1,
 			...cols.slice(1).map((key) => obj[key as keyof Student] ?? ""),
 		]);
-		
+
 		autoTable(doc, {
 			head: [cols],
 			body: rows,
