@@ -23,12 +23,7 @@ import { classSubjects, studentCount } from "@/utils/class-datas";
 import { addStudentData, updateStudent } from "@/utils/actions";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
-import {
-	ChevronRightIcon,
-	Download,
-	LogOut,
-	UserCog,
-} from "lucide-react";
+import { ChevronRightIcon, Download, LogOut, UserCog } from "lucide-react";
 import { redirect } from "next/navigation";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -296,7 +291,7 @@ export default function TableContent({
 	const downloadPDF = () => {
 		const toastId = toast.loading("Downloading student data...");
 		const doc = new jsPDF();
-		const cols = ["no.","admission_number", "name", "attendance"];
+		const cols = ["no.", "admission_number", "name", "attendance"];
 		// biome-ignore lint/complexity/noForEach: <explanation>
 		Object.values(subjects).forEach((value) => cols.push(value));
 		cols.push("total_mark", "rank");

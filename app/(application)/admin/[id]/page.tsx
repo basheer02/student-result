@@ -1,16 +1,14 @@
-"use server"
+"use server";
 import type { Student } from "@/types";
 import { getClassData } from "@/utils/actions";
 import { classSubjects } from "@/utils/class-datas";
 import type { ColumnDef } from "@tanstack/react-table";
 import TableContent from "./table-content";
 
-
 export default async function Page({
 	params,
-}: { params: Promise<{ id: string }> } ) {
-
-	const parameters  = await params;
+}: { params: Promise<{ id: string }> }) {
+	const parameters = await params;
 	const clas = Buffer.from(parameters.id, "hex").toString("utf-8");
 
 	try {
