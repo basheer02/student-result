@@ -1,4 +1,4 @@
-"use server"
+"use server";
 import type { Student } from "@/types";
 import { cookies } from "next/headers";
 import ResultPage from "./result-page";

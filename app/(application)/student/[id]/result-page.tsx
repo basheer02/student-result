@@ -5,6 +5,7 @@ import { classSubjects, malayalamText, subjectText } from "@/utils/class-datas";
 import type { Student } from "@/types";
 import { Button } from "@/components/ui/button";
 import autoTable from "jspdf-autotable";
+import { redirect } from "next/navigation";
 
 export default function ResultPage({ studentData }: { studentData: Student }) {
 	const subjects = classSubjects[Number(studentData.class)];
@@ -80,7 +81,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 		});
 
 		startY = 85;
-		
+
 		// Subjects and marks
 		const subjectRows = subjects.map((subject) => [
 			subjectText[subject].toUpperCase(),
@@ -105,7 +106,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			["TOTAL MARK", studentData.total_mark],
 			["STATUS", studentData.status],
 		];
-		
+
 		if (subjects.length === 2) {
 			startY = 113;
 		} else if (subjects.length === 4) {
@@ -141,11 +142,14 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 	return (
 		<div className="flex flex-col bg-gray-900 md:w-[calc(100vw-500px)] w-md h-screen mx-auto shadow-md p-2">
 			<div className="relative">
-				<h2 className="mt-4 text-white text-lg text-center font-bold">
+				<h3 className="mt-2 text-2xl text-white font-bold text-center">
+					SUBULULHUDA HIGHER SECONDARY MADRASA
+				</h3>
+				<h2 className="mt-2 text-white text-lg text-center font-bold">
 					Examination Result
 				</h2>
 			</div>
-			<div className="flex mt-8 grid p-4 bg-white w-full rounded-lg mt-4 py-2">
+			<div className="flex mt-2 grid p-4 bg-white w-full rounded-lg mt-4 py-2 overflow-x-auto">
 				<table className="w-full mt-4 mb-4 border-spacing-0 bg-gray-100 shadow-md border border-gray-300 rounded-lg">
 					<tbody>
 						<TableItem
@@ -239,6 +243,13 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 					<span>Download Mark List</span>
 				</Button>
 			</div>
+			<Button
+				variant={"secondary"}
+				className="mt-4 p-2"
+				onClick={() => redirect("/")}
+			>
+				Check another result
+			</Button>
 		</div>
 	);
 }

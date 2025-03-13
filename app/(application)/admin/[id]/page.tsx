@@ -60,7 +60,7 @@ export default async function Page({
 		const columns = [...staticColumns, ...dynamicColumns, ...totalMarkColumn];
 
 		return (
-			<main className="w-full">
+			<main className="w-full h-screen">
 				<h3 className="p-2 mt-2 text-2xl text-white font-bold text-center">
 					SUBULULHUDA HIGHER SECONDARY MADRASA
 				</h3>

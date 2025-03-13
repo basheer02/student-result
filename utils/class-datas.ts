@@ -1,5 +1,13 @@
 export const classSubjects: Record<number, string[]> = {
-	1: ["writing", "reading"],
+	1: [
+		"thafheem_reading",
+		"thafheem_writing",
+		"duroos_reading",
+		"duroos_writing",
+		"dhiniyyaath",
+		"aqlaq",
+		"listen_write",
+	],
 	2: ["quran", "hifl", "fiqh", "aqeeda", "lis_quran", "aqlaq"],
 	3: [
 		"quran",
@@ -41,8 +49,12 @@ export const classSubjects: Record<number, string[]> = {
 };
 
 export const malayalamText: Record<string, string> = {
-	writing: "തഫ്ഹീമു തിലാവ (എഴുത്ത്)",
-	reading: "തഫ്ഹീമു തിലാവ (വായന)",
+	thafheem_writing: "തഫ്ഹീം വായന",
+	thafheem_reading: "തഫ്ഹീം എഴുത്ത്",
+	duroos_writing: "ദുറൂസ് വായന",
+	duroos_reading: "ദുറൂസ് എഴുത്ത്",
+	dhiniyyaath: "ദിനിയ്യാത്ത്",
+	listen_write: "കേട്ടഴുത്ത്",
 	quran: "ഖുർആൻ",
 	hifl: "ഹിഫ്ൾ",
 	fiqh: "ഫിഖ്ഹ്",
@@ -69,7 +81,6 @@ export const subjectText: Record<string, string> = {
 	dur_ihsan: "Durusul Ihsan",
 	tafsir: "Tafsir",
 };
-
 
 export const studentCount: Record<number, number> = {
 	1: 42,
