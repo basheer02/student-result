@@ -6,6 +6,7 @@ import type { Student } from "@/types";
 import { Button } from "@/components/ui/button";
 import autoTable from "jspdf-autotable";
 import { redirect } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ResultPage({ studentData }: { studentData: Student }) {
 	const subjects = classSubjects[Number(studentData.class)];
@@ -38,6 +39,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 	);
 
 	const generatePDF = () => {
+		const toastId = toast.loading("Downloading mark list...");
 		const doc = new jsPDF();
 
 		// Set school name at the top
@@ -113,7 +115,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			startY = 128;
 		} else if (subjects.length === 6) {
 			startY = 143;
-		} else if (subjects.length > 6) {
+		} else if (subjects.length === 8) {
 			startY = 158;
 		}
 
@@ -137,6 +139,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 
 		// Save the PDF
 		doc.save(`${studentData.name}_marklist.pdf`);
+		toast.success("Download successful!", { id: toastId, duration: 2000 });
 	};
 
 	return (
