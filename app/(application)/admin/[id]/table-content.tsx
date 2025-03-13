@@ -216,7 +216,6 @@ export default function TableContent({
 				addOrUpdate,
 			);
 			setData([...passedStudents, ...failedStudents]);
-			console.log(studentData);
 			return true;
 		} catch (error) {
 			console.log(error);

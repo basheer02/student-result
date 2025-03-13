@@ -52,6 +52,7 @@ export async function studentLogin(
 	let studentData: Student | null;
 
 	try {
+		console.log(selectedClass);
 		const student = await getStudentDataByID(selectedClass, admissionNumber);
 
 		if (student.empty) {

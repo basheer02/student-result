@@ -107,13 +107,13 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			["STATUS", studentData.status],
 		];
 
-		if (subjects.length === 2) {
+		if (subjects.length === 2) { 
 			startY = 113;
 		} else if (subjects.length === 4) {
 			startY = 128;
 		} else if (subjects.length === 6) {
 			startY = 143;
-		} else if (subjects.length === 8) {
+		} else if (subjects.length > 6) {
 			startY = 158;
 		}
 
@@ -245,7 +245,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			</div>
 			<Button
 				variant={"secondary"}
-				className="mt-4 p-2"
+				className="mt-4 p-2 bg-teal-700 text-white hover:bg-teal-600"
 				onClick={() => redirect("/")}
 			>
 				Check another result
