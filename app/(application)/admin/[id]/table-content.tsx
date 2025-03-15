@@ -224,18 +224,6 @@ export default function TableContent({
 			console.log(error);
 			return false;
 		}
-
-		// const formattedStudentData = [...passedStudents, ...faildStudents];
-		// try {
-		// 	await addStudentData(
-		// 		`class-${selectedClass}`,
-		// 		JSON.parse(JSON.stringify(formattedStudentData)),
-		// 	);
-		// 	setData(formattedStudentData);
-		// 	return true;
-		// } catch (error) {
-		// 	return false;
-		// }
 	};
 
 	const handleFileUpload = async (
@@ -314,16 +302,31 @@ export default function TableContent({
 			const toastId = toast.loading("Downloading student data...");
 			const doc = new jsPDF();
 			const cols = ["no", "admission_number", "name", "attendance"];
-			// biome-ignore lint/complexity/noForEach: <explanation>
-			Object.values(subjects).forEach((value) => cols.push(value));
-			cols.push("total_mark", "rank");
+
+			for (const value of Object.values(subjects)) {
+				cols.push(value);
+			}
+
+			cols.push("total_mark","status", "rank");
 			const rows = Object.values(data).map((obj, index) => [
 				index + 1,
 				...cols.slice(1).map((key) => String(obj[key as keyof Student] ?? "")),
 			]);
-			cols[1] = "adm_no";
+			cols[1] = "adm";
 			cols[3] = "hajar";
-			cols[cols.length - 2] = "total";
+			cols[cols.length - 3] = "total";
+			const colIndex = cols.indexOf("lis_quran");
+			if (colIndex !== -1) {
+				cols[colIndex] = "lisan";
+			}
+			
+			if(selectedClass === "1"){
+				cols[4] = "thafhim(R)";
+				cols[5] = "thafhim(W)";
+				cols[6] = "duroos(R)";
+				cols[7] = "duroos(W)";
+				cols[9] = "listen";
+			}
 
 			const text = ` Total students : ${data.length}/${studentCount[Number(selectedClass)]}`;
 			doc.setFontSize(12);
@@ -511,7 +514,7 @@ export default function TableContent({
 						<form onSubmit={editStudentData}>
 							<div className="p-2">
 								<Input
-									className="font-semibold text-sm"
+									className="font-semibold text-sm bg-gray-100"
 									type="text"
 									value={`Class - ${selectedClass}`}
 									disabled
@@ -520,6 +523,7 @@ export default function TableContent({
 							<div className="p-2">
 								<Input
 									type="text"
+									className="bg-gray-100"
 									value={`Admission no : ${selectedStudent?.admission_number}`}
 									disabled
 								/>
@@ -528,6 +532,7 @@ export default function TableContent({
 								<Label htmlFor="name">Name</Label>
 								<Input
 									type="text"
+									className="bg-gray-100"
 									defaultValue={selectedStudent?.name}
 									name="name"
 								/>
@@ -537,6 +542,7 @@ export default function TableContent({
 								<Input
 									type="number"
 									name="attendance"
+									className="bg-gray-100"
 									defaultValue={selectedStudent?.attendance}
 								/>
 							</div>
@@ -546,6 +552,7 @@ export default function TableContent({
 									<Input
 										name={subject}
 										type="number"
+										className="bg-gray-100"
 										defaultValue={selectedStudent?.[subject as keyof Student]}
 									/>
 								</div>

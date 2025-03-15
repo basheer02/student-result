@@ -7,8 +7,14 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import MadrasaImage from "../public/madrasa.jpeg";
+import VictoryImage from "../public/victory.jpeg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/effect-fade";
 
 import {
 	Select,
@@ -18,6 +24,8 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+
+const Images = [MadrasaImage, VictoryImage];
 
 export default function LandingPage() {
 	const [showStudent, setShowStudent] = useState(true);
@@ -51,7 +59,7 @@ export default function LandingPage() {
 		const formData = new FormData(e.currentTarget);
 		try {
 			await adminLogin(formData);
-			toast.success("Successful!", { id: toastId, duration:2000 });
+			toast.success("Successful!", { id: toastId, duration: 2000 });
 		} catch (error) {
 			if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
 				toast.success("Successful!", { id: toastId, duration: 2000 });
@@ -75,7 +83,10 @@ export default function LandingPage() {
 			if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
 				toast.success("Successful!", { id: toastId, duration: 2000 });
 			} else {
-				toast.error("Invalid admission number", { id: toastId, duration: 2000 });
+				toast.error("Invalid admission number", {
+					id: toastId,
+					duration: 2000,
+				});
 			}
 		}
 	};
@@ -141,7 +152,7 @@ export default function LandingPage() {
 						</div>
 					)}
 					<div className="py-4">
-						<Button 
+						<Button
 							className="w-full mt-3 text-white bg-teal-600 font-semibold hover:bg-teal-600/40"
 							type="submit"
 						>
@@ -200,24 +211,46 @@ export default function LandingPage() {
 				<h3 className="text-2xl text-white font-bold text-center">
 					SUBULULHUDA HIGHER SECONDARY MADRASA
 				</h3>
-				<h4 className="text-l text-white text-center font-bold">CHENAKKALANGADI</h4>
-				<div className="relative mt-4 rounded lg:flex">
-					<Image
+				<h4 className="text-l text-white text-center font-bold">
+					CHENAKKALANGADI
+				</h4>
+				<div className="mt-4 rounded lg:flex">
+					<Swiper
+						modules={[Autoplay]}
+						autoplay={{ delay: 2000 }}
+						loop
+						speed={1000} // Slower fade transition
+						className="max-w-[900px]"
+					>
+						{Images.map((src, index) => (
+							<SwiperSlide
+								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+								key={index}
+							>
+								<Image
+									src={src}
+									alt={`Slide ${index + 1}`}
+									className="h-[400px] lg:h-[600px] object-contain"
+								/>
+							</SwiperSlide>
+						))}
+					</Swiper>
+					{/* <Image
 						src={MadrasaImage}
 						alt="loading"
 						className="mt-2 object-cover h-[400px] lg:ml-4 lg:h-[600px] lg:w-[900px] rounded-lg"
-					/>
+					/> */}
 					<div className="p-3">
 						<Button
 							variant="secondary"
-							className="mt-2 w-full lg:hidden"
+							className="mt-4 w-full lg:hidden"
 							onClick={handleOpenModal}
 						>
 							{(showStudent && "Check result") || (showAdmin && "Login")}
 						</Button>
 					</div>
 					{!isMobile && (
-						<div className="m-6 p-6 border-t w-[500px] rounded-lg md:h-[450px]">
+						<div className="m-6 mr-12 p-6 border-t w-[500px] rounded-lg md:h-[450px]">
 							{showStudent && <LoginForm />}
 							{showAdmin && <LoginForm />}
 						</div>
