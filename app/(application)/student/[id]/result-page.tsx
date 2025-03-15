@@ -145,7 +145,10 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 	return (
 		<div className="flex flex-col bg-gray-900 md:w-[calc(100vw-500px)] w-md h-screen mx-auto shadow-md p-2">
 			<div className="relative">
-				<h3 className="mt-2 text-2xl text-white font-bold text-center">
+				<h3 className="p-2 text-white text-center arabic-text">
+					مدرسة سبل اله‍دى الثانوية العليا
+				</h3>
+				<h3 className="text-2xl text-white font-bold text-center">
 					SUBULULHUDA HIGHER SECONDARY MADRASA
 				</h3>
 				<h2 className="mt-2 text-white text-lg text-center font-bold">

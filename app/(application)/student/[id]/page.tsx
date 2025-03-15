@@ -13,9 +13,9 @@ export default async function Page() {
 		const studentData = JSON.parse(cookie.value) as Student;
 
 		return (
-			<div>
+			<main className="h-[100vh]">
 				<ResultPage studentData={studentData} />
-			</div>
+			</main>
 		);
 	} catch (error) {
 		return (

@@ -85,13 +85,18 @@ export async function adminLogin(formData: FormData) {
 	const username = formData.get("username") as string;
 	const password = formData.get("password") as string;
 
-	const clas = username.length === 6 ? username.slice(-1) : username.slice(-2);
-	const credentials = password === username;
+	const credentials = username === "admin" && password === "subululhuda";
 
-	if (credentials && +clas <= 12 && +clas >= 1) {
-		const original = `class-${clas}`;
-		const id = Buffer.from(original, "utf-8").toString("hex");
-		redirect(`/admin/${id}`);
+	if (credentials) {
+		const cookieStore = await cookies();
+		const cookie = JSON.stringify(true);
+		cookieStore.set("admin_auth", cookie, {
+			secure: true,
+			path: "/",
+			sameSite: "strict",
+			httpOnly: true,
+		});
+		redirect("/admin");
 	} else {
 		throw new Error("Login failed");
 	}
@@ -145,4 +150,9 @@ export async function addStudentData(
 		console.log(" Error fetching data :", error);
 		throw new Error(" Error retrieving class data");
 	}
+}
+
+export async function logout() {
+	const cookieStore = await cookies();
+	cookieStore.delete("admin_auth");
 }

@@ -6,9 +6,6 @@ import { ChevronRightIcon, User, UserCog } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-//import * as XLSX from "xlsx";
-// import { saveAs } from "file-saver";
-
 import MadrasaImage from "../public/madrasa.jpeg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -31,15 +28,13 @@ export default function LandingPage() {
 
 	const [currentRole, setCurrentRole] = useState("Student");
 	const [showList, setShowList] = useState(false);
-	//const [isOnline, setIsOnline] = useState(navigator.onLine);
 	const roles = currentRole === "Student" ? "Admin" : "Student";
 
-	//const isMobile = window.matchMedia("(max-width: 768px)").matches;
 	const [isMobile, setIsMobile] = useState(false);
 
 	useEffect(() => {
 		// Check window only after component mounts
-		setIsMobile(window.matchMedia("(max-width: 768px)").matches);
+		setIsMobile(window.matchMedia("(max-width: 1024px)").matches);
 	}, []);
 
 	const [selectedClass, setSelectedClass] = useState("");
@@ -85,24 +80,6 @@ export default function LandingPage() {
 		}
 	};
 
-	// const download = async() => {
-	// 	const documents = await getAlldata();
-	// 	const worksheet = XLSX.utils.json_to_sheet(documents);
-	// 	const workbook = XLSX.utils.book_new();
-	// 	XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-
-	// 	// Generate and trigger the file download
-	// 	const excelBuffer = XLSX.write(workbook, {
-	// 		bookType: "xlsx",
-	// 		type: "array",
-	// 	});
-	// 	const excelBlob = new Blob([excelBuffer], {
-	// 		type: "application/octet-stream",
-	// 	});
-
-	// 	saveAs(excelBlob, "students.xlsx");
-	// };
-
 	const LoginForm = () => {
 		return (
 			<div className="p-4 rounded-md mt-2">
@@ -110,8 +87,8 @@ export default function LandingPage() {
 					className="w-full md:p-6"
 					onSubmit={showAdmin ? handleAdminLogin : handleStudentLogin}
 				>
-					<h2 className="text-2xl text-white font-bold text-center">
-						{showAdmin ? "Admin Login" : "Student Result"}
+					<h2 className="text-2xl text-gray-200 font-bold text-center">
+						{showAdmin ? "Admin Login" : "Annual Examination Result"}
 					</h2>
 					{showStudent && (
 						<Select
@@ -127,14 +104,10 @@ export default function LandingPage() {
 									<SelectItem value="class-2">Class-2</SelectItem>
 									<SelectItem value="class-3">Class-3</SelectItem>
 									<SelectItem value="class-4">Class-4</SelectItem>
-									<SelectItem value="class-5">Class-5</SelectItem>
 									<SelectItem value="class-6">Class-6</SelectItem>
-									<SelectItem value="class-7">Class-7</SelectItem>
 									<SelectItem value="class-8">Class-8</SelectItem>
 									<SelectItem value="class-9">Class-9</SelectItem>
-									<SelectItem value="class-10">Class-10</SelectItem>
 									<SelectItem value="class-11">Class-11</SelectItem>
-									<SelectItem value="class-12">Class-12</SelectItem>
 								</SelectGroup>
 							</SelectContent>
 						</Select>
@@ -221,9 +194,13 @@ export default function LandingPage() {
 						</div>
 					)}
 				</div>
-				<h3 className="p-2 mt-2 text-2xl text-white font-bold text-center">
+				<h3 className="p-2 text-white text-center arabic-text">
+					مدرسة سبل اله‍دى الثانوية العليا
+				</h3>
+				<h3 className="text-2xl text-white font-bold text-center">
 					SUBULULHUDA HIGHER SECONDARY MADRASA
 				</h3>
+				<h4 className="text-l text-white text-center font-bold">CHENAKKALANGADI</h4>
 				<div className="relative mt-4 rounded lg:flex">
 					<Image
 						src={MadrasaImage}

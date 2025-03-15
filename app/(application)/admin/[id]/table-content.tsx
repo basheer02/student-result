@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { classSubjects, studentCount } from "@/utils/class-datas";
-import { addStudentData, updateStudent } from "@/utils/actions";
+import { addStudentData, logout, updateStudent } from "@/utils/actions";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
@@ -31,7 +31,6 @@ import {
 	LogOut,
 	UserCog,
 } from "lucide-react";
-import { redirect } from "next/navigation";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 //import { saveAs } from "file-saver";
@@ -52,11 +51,14 @@ export default function TableContent({
 	const [isOpen, setIsOpen] = useState(false);
 
 	const toggleDropdown = () => setIsOpen(!isOpen);
-	const signOut = () => {
-		console.log("Signing out...");
-		redirect("/");
-		// Add your sign-out logic here
-	};
+	async function signOut() {
+			try {
+				await logout();
+				window.location.href = "/";
+			} catch (error) {
+				console.error("Error signing out:", error);
+			}
+		}
 
 	data.sort((a, b) => {
 		if (a.status === "failed") return 1;
@@ -199,14 +201,15 @@ export default function TableContent({
 					addOrUpdate,
 				);
 
-				if (data.length !== 0) { // if data already exists, update ranks
-					const dataToUpdate = [...data,...res];
+				if (data.length !== 0) {
+					// if data already exists, update ranks
+					const dataToUpdate = [...data, ...res];
 					const success = await updateRank("update", dataToUpdate);
 					if (success) {
 						return true;
-					} 
-					return false
-				} 
+					}
+					return false;
+				}
 				setData(res);
 				return true;
 			}
@@ -340,7 +343,7 @@ export default function TableContent({
 			// 	head: [cols],
 			// 	body: rows,
 			// });
-			
+
 			doc.save(`Class_${selectedClass}_data.pdf`);
 			toast.success("Download successful!", { id: toastId, duration: 2000 });
 		}
@@ -367,9 +370,8 @@ export default function TableContent({
 	// 		console.error("Error exporting data:", error);
 	// 	}
 	// }
-
 	return (
-		<div className="flex flex-col w-full shadow-md mx-auto p-4">
+		<div className="flex flex-col shadow-md mx-auto p-4">
 			<div className="absolute top-4 right-4 z-50">
 				<Button
 					variant={"ghost"}
@@ -404,8 +406,8 @@ export default function TableContent({
 					</div>
 				)}
 			</div>
-			<div className="flex w-full bg-white border shadow-md max-h-[calc(100vh-200px)]">
-				<Table>
+			<div className="flex bg-white border shadow-md max-h-[70vh]">
+				<Table className="overflow-auto">
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
@@ -480,16 +482,13 @@ export default function TableContent({
 				)}
 			</div>
 			{uploadButton && (
-				<div className="m-2">
-					<div className="flex">
-						<div>
-							<p className="text-white m-2 font-semibold w-[110px]">
-								Upload data
-							</p>
-						</div>
-						<Input
-							type="file"
-							className="text-sm text-gray-500
+				<div className="flex mt-1">
+					<Label className="text-white m-2 font-semibold w-[110px]">
+						Upload data
+					</Label>
+					<Input
+						type="file"
+						className="text-sm text-gray-500
                      file:mr-4 file:py-2 file:px-4
                      file:rounded-full file:border-0
                      file:text-sm file:font-semibold
@@ -499,13 +498,9 @@ export default function TableContent({
                      file:cursor-pointer
 										 bg-transparent
                      "
-							accept=".xlsx, .xls"
-							onChange={handleFileUpload}
-						/>
-					</div>
-					{/* <Button className="mt-2 w-full" variant={"outline"}>
-					Download data
-				</Button> */}
+						accept=".xlsx, .xls"
+						onChange={handleFileUpload}
+					/>
 				</div>
 			)}
 
