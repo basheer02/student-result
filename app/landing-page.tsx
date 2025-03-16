@@ -51,7 +51,7 @@ export default function LandingPage() {
 		const targetDate = new Date("2025-03-17T07:30:00");
 		const checkTime = () => {
 			const now = new Date();
-			setResultPublished(now <= targetDate); // Show button if the time has passed
+			setResultPublished(now >= targetDate); // Show button if the time has passed
 		};
 
 		checkTime(); // Initial check
