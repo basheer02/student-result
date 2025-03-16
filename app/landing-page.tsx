@@ -48,10 +48,11 @@ export default function LandingPage() {
 		// Check window only after component mounts
 		setIsMobile(window.matchMedia("(max-width: 1024px)").matches);
 
-		const targetDate = new Date("2025-03-17T07:30:00");
+		const targetDateIST = new Date("2025-03-17T02:00:00Z"); // UTC time
+
 		const checkTime = () => {
 			const now = new Date();
-			setResultPublished(now >= targetDate); // Show button if the time has passed
+			setResultPublished(now >= targetDateIST); // Show button if the time has passed
 		};
 
 		checkTime(); // Initial check
@@ -272,7 +273,8 @@ export default function LandingPage() {
 					<div className="p-3 rounded-lg">
 						<span className="p-4 block text-center border-t border rounded-md border-gray-400 text-red-500 font-bold">
 							Annual Examination Result will be published on{" "}
-							{format(new Date("2025-03-17T07:30:00"), "MMMM d,h:mm a")}
+							{format(new Date("2025-03-17T07:30:00"), "MMMM d,h:mm a ")}
+							IST
 						</span>
 					</div>
 				)}
