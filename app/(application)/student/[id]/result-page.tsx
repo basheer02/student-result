@@ -31,7 +31,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 				{title}
 			</td>
 			<td
-				className={`w-1/2 ${textPos} text-sm font-semibold break-words p-2 ${textColor}`}
+				className={`w-1/2 ${textPos} text-sm font-bold break-words p-2 ${textColor}`}
 			>
 				{value}
 			</td>
@@ -251,7 +251,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			</div>
 			<Button
 				variant={"secondary"}
-				className="mt-4 p-2 bg-teal-700 text-white hover:bg-teal-600"
+				className="mt-4 p-2 bg-teal-600 text-white hover:bg-teal-700"
 				onClick={() => redirect("/")}
 			>
 				Check another result

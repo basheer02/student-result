@@ -5,9 +5,12 @@ import { adminLogin, studentLogin } from "@/utils/actions";
 import { ChevronRightIcon, User, UserCog } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 
-import MadrasaImage from "../public/madrasa.jpeg";
-import VictoryImage from "../public/victory.jpeg";
+import Img1 from "../public/1.jpeg";
+import Img2 from "../public/2.jpeg";
+import Img3 from "../public/3.jpeg";
+import Img4 from "../public/4.jpeg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -25,7 +28,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
-const Images = [MadrasaImage, VictoryImage];
+const Images = [Img1, Img2, Img3, Img4];
 
 export default function LandingPage() {
 	const [showStudent, setShowStudent] = useState(true);
@@ -39,10 +42,22 @@ export default function LandingPage() {
 	const roles = currentRole === "Student" ? "Admin" : "Student";
 
 	const [isMobile, setIsMobile] = useState(false);
+	const [resultPublished, setResultPublished] = useState(false);
 
 	useEffect(() => {
 		// Check window only after component mounts
 		setIsMobile(window.matchMedia("(max-width: 1024px)").matches);
+
+		const targetDate = new Date("2025-03-17T07:30:00");
+		const checkTime = () => {
+			const now = new Date();
+			setResultPublished(now <= targetDate); // Show button if the time has passed
+		};
+
+		checkTime(); // Initial check
+		const interval = setInterval(checkTime, 1000); // Check every second
+
+		return () => clearInterval(interval); // Cleanup interval
 	}, []);
 
 	const [selectedClass, setSelectedClass] = useState("");
@@ -235,32 +250,44 @@ export default function LandingPage() {
 							</SwiperSlide>
 						))}
 					</Swiper>
-					{/* <Image
-						src={MadrasaImage}
-						alt="loading"
-						className="mt-2 object-cover h-[400px] lg:ml-4 lg:h-[600px] lg:w-[900px] rounded-lg"
-					/> */}
-					<div className="p-3">
-						<Button
-							variant="secondary"
-							className="mt-4 w-full lg:hidden"
-							onClick={handleOpenModal}
-						>
-							{(showStudent && "Check result") || (showAdmin && "Login")}
-						</Button>
-					</div>
-					{!isMobile && (
+					{(showAdmin || (showStudent && resultPublished)) && (
+						<div className="p-3">
+							<Button
+								variant="secondary"
+								className="mt-4 w-full lg:hidden"
+								onClick={handleOpenModal}
+							>
+								{showAdmin ? "Login" : "Check Result"}
+							</Button>
+						</div>
+					)}
+					{!isMobile && (showAdmin || (showStudent && resultPublished)) && (
 						<div className="m-6 mr-12 p-6 border-t w-[500px] rounded-lg md:h-[450px]">
-							{showStudent && <LoginForm />}
+							{showStudent && resultPublished && <LoginForm />}
 							{showAdmin && <LoginForm />}
 						</div>
 					)}
 				</div>
+				{!resultPublished && (
+					<div className="p-3 rounded-lg">
+						<span className="p-4 block text-center border-t border rounded-md border-gray-400 text-red-500 font-bold">
+							Annual Examination Result will be published on{" "}
+							{format(new Date("2025-03-17T07:30:00"), "MMMM d,h:mm a")}
+						</span>
+					</div>
+				)}
+				{resultPublished && (
+					<div className="p-3 rounded-lg">
+						<span className="p-4 block text-center border-t border rounded-md border-gray-400 text-red-500 font-bold">
+							Annual Examination Result published
+						</span>
+					</div>
+				)}
 				{isModalOpen && (
 					<div className="fixed inset-0 px-4 bg-gray-500/50 backdrop-blur-sm z-50 flex justify-center items-center">
 						<div className="flex items-center justify-center h-full w-full">
 							<div className="max-w-[400px] w-full mx-auto rounded-lg bg-gray-900 p-8 px-10 shadow-xl shadow-gray-500/50">
-								{showStudent && <LoginForm />}
+								{showStudent && resultPublished && <LoginForm />}
 								{showAdmin && <LoginForm />}
 							</div>
 						</div>
