@@ -14,9 +14,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 	const subjects = classSubjects[Number(studentData.class)];
 	const schoolName = "SUBULULHUDA HIGHER SECONDARY MADRASA";
 
-	const [showConfetti, setShowConfetti] = useState(
-		studentData.status === "passed",
-	);
+	const showConfetti = studentData.status === "passed";
 	const [opacity, setOpacity] = useState(1);
 	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -160,7 +158,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 		<div className="flex flex-col bg-gray-900 md:w-[calc(100vw-500px)] w-md h-screen mx-auto shadow-md p-2">
 			{showConfetti && (
 				<div style={{ opacity, transition: "opacity 2s ease-out" }}>
-				<Confetti width={dimensions.width} height={dimensions.height}/>
+					<Confetti width={dimensions.width} height={dimensions.height} />
 				</div>
 			)}
 			<div className="relative">
