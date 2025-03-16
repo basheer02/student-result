@@ -7,11 +7,25 @@ import { Button } from "@/components/ui/button";
 import autoTable from "jspdf-autotable";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
+import Confetti from "react-confetti";
+import { useEffect, useState } from "react";
 
 export default function ResultPage({ studentData }: { studentData: Student }) {
 	const subjects = classSubjects[Number(studentData.class)];
-
 	const schoolName = "SUBULULHUDA HIGHER SECONDARY MADRASA";
+
+	const [showConfetti, setShowConfetti] = useState(
+		studentData.status === "passed",
+	);
+	const [opacity, setOpacity] = useState(1);
+	const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			setDimensions({ width: window.innerWidth, height: window.innerHeight });
+		}
+		setTimeout(() => setOpacity(0), 4000); // Slowly fade out after 3s
+	}, []);
 
 	const TableItem = ({
 		title,
@@ -109,7 +123,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			["STATUS", studentData.status],
 		];
 
-		if (subjects.length === 2) { 
+		if (subjects.length === 2) {
 			startY = 113;
 		} else if (subjects.length === 4) {
 			startY = 128;
@@ -144,6 +158,11 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 
 	return (
 		<div className="flex flex-col bg-gray-900 md:w-[calc(100vw-500px)] w-md h-screen mx-auto shadow-md p-2">
+			{showConfetti && (
+				<div style={{ opacity, transition: "opacity 2s ease-out" }}>
+				<Confetti width={dimensions.width} height={dimensions.height}/>
+				</div>
+			)}
 			<div className="relative">
 				<h3 className="p-2 text-white text-center arabic-text">
 					مدرسة سبل اله‍دى الثانوية العليا

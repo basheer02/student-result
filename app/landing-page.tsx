@@ -49,7 +49,6 @@ export default function LandingPage() {
 		setIsMobile(window.matchMedia("(max-width: 1024px)").matches);
 
 		const targetDateIST = new Date("2025-03-17T02:00:00Z"); // UTC time
-
 		const checkTime = () => {
 			const now = new Date();
 			setResultPublished(now >= targetDateIST); // Show button if the time has passed
