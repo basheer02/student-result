@@ -11,6 +11,7 @@ import Img1 from "../public/1.jpeg";
 import Img2 from "../public/2.jpeg";
 import Img3 from "../public/3.jpeg";
 import Img4 from "../public/4.jpeg";
+import Img5 from "../public/5.jpeg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -28,7 +29,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 
-const Images = [Img1, Img2, Img3, Img4];
+const Images = [Img1, Img2, Img3, Img4, Img5];
 
 export default function LandingPage() {
 	const [showStudent, setShowStudent] = useState(true);
@@ -42,22 +43,15 @@ export default function LandingPage() {
 	const roles = currentRole === "Student" ? "Admin" : "Student";
 
 	const [isMobile, setIsMobile] = useState(false);
-	const [resultPublished, setResultPublished] = useState(false);
+	
+
+	const targetDateIST = new Date("2025-03-17T02:00:00Z"); // UTC time
+	const now = new Date();
+	const resultPublished = now >= targetDateIST;
 
 	useEffect(() => {
 		// Check window only after component mounts
 		setIsMobile(window.matchMedia("(max-width: 1024px)").matches);
-
-		const targetDateIST = new Date("2025-03-17T02:00:00Z"); // UTC time
-		const checkTime = () => {
-			const now = new Date();
-			setResultPublished(now >= targetDateIST); // Show button if the time has passed
-		};
-
-		checkTime(); // Initial check
-		const interval = setInterval(checkTime, 1000); // Check every second
-
-		return () => clearInterval(interval); // Cleanup interval
 	}, []);
 
 	const [selectedClass, setSelectedClass] = useState("");
