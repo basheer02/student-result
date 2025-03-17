@@ -83,6 +83,7 @@ export default function TableContent({
 
 		const formData = new FormData(e.currentTarget);
 		const updatedData: Partial<Student> = {
+			admission_number: Number(formData.get("admission_no")),
 			attendance: Number(formData.get("attendance")),
 			name: formData.get("name") as string,
 			...Object.fromEntries(
@@ -521,11 +522,12 @@ export default function TableContent({
 								/>
 							</div>
 							<div className="p-2">
+								<Label htmlFor="name">Admission no.</Label>
 								<Input
-									type="text"
+									type="number"
 									className="bg-gray-100"
-									value={`Admission no : ${selectedStudent?.admission_number}`}
-									disabled
+									name="admission_no"
+									defaultValue={selectedStudent?.admission_number}
 								/>
 							</div>
 							<div className="p-2">
