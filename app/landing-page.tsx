@@ -5,7 +5,7 @@ import { adminLogin, studentLogin } from "@/utils/actions";
 import { ChevronRightIcon, User, UserCog } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
+//import { format } from "date-fns";
 
 import Img1 from "../public/1.jpeg";
 import Img2 from "../public/2.jpeg";
