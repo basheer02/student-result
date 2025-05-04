@@ -262,7 +262,7 @@ export default function LandingPage() {
 						</div>
 					)}
 				</div>
-				{!resultPublished && (
+				{/* {!resultPublished && (
 					<div className="p-3 rounded-lg">
 						<span className="p-4 block text-center border-t border rounded-md border-gray-400 text-red-500 font-bold">
 							Annual Examination Result will be published on{" "}
@@ -277,7 +277,7 @@ export default function LandingPage() {
 							Annual Examination Result published
 						</span>
 					</div>
-				)}
+				)} */}
 				{isModalOpen && (
 					<div className="fixed inset-0 px-4 bg-gray-500/50 backdrop-blur-sm z-50 flex justify-center items-center">
 						<div className="flex items-center justify-center h-full w-full">

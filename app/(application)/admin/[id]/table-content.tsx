@@ -353,6 +353,57 @@ export default function TableContent({
 		}
 	};
 
+	const generatePDF = () => {
+		const toastId = toast.loading("Downloading mark list...");
+		const doc = new jsPDF();
+
+
+		// Calculate total width of the table
+		const pageWidth = doc.internal.pageSize.getWidth();
+		const marginLeft = (pageWidth - 140) / 2;
+
+		let startY = 5;
+
+		for (const student of data) {
+			// Student details
+			const studentDetails = [
+				["Admission Number", student.admission_number],
+				["Class", selectedClass],
+				["Name", student.name],
+			];
+
+			autoTable(doc, {
+				startY,
+				body: studentDetails,
+				theme: "grid",
+				styles: { halign: "center", fontSize: 12 },
+				headStyles: { fillColor: [22, 160, 133] },
+				columnStyles: {
+					0: { cellWidth: 70, textColor: [0, 0, 0] }, // First column width
+					1: { cellWidth: 70, textColor: [0, 0, 0], fontStyle: "bold" }, // Second column width
+				},
+				margin: { left: marginLeft, right: marginLeft },
+			});
+
+			// Add a gap between student details
+			startY += 40;
+
+			// Check if the next student details will exceed the page height
+			if (startY + 40 > doc.internal.pageSize.getHeight()) {
+				if (data.indexOf(student) !== data.length - 1) {
+					doc.addPage();
+				}
+				startY = 10; // Reset startY for the new page
+			}
+		}
+		
+		//let startY = 50;
+		
+		// Save the PDF
+		doc.save(`class_${selectedClass}_list.pdf`);
+		toast.success("Download successful!", { id: toastId, duration: 2000 });
+	};
+
 	// async function exportToExcel() {
 	// 	try {
 	// 		// Create a worksheet and workbook
@@ -394,7 +445,7 @@ export default function TableContent({
 						<Button
 							variant={"ghost"}
 							className="bg-gray-200 rounded hover:bg-gray-200"
-							onClick={downloadPDF}
+							onClick={generatePDF}
 						>
 							<Download className="ml-4 text-gray-900" size={24} />
 							<span className="mr-2 ml-2 text-gray-900">Download</span>
