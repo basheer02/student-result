@@ -295,63 +295,63 @@ export default function TableContent({
 		}
 	};
 
-	const downloadPDF = () => {
-		setIsOpen(false);
-		if (data.length === 0) {
-			toast.error("No data to download!");
-		} else {
-			const toastId = toast.loading("Downloading student data...");
-			const doc = new jsPDF();
-			const cols = ["no", "admission_number", "name", "attendance"];
+	// const downloadPDF = () => {
+	// 	setIsOpen(false);
+	// 	if (data.length === 0) {
+	// 		toast.error("No data to download!");
+	// 	} else {
+	// 		const toastId = toast.loading("Downloading student data...");
+	// 		const doc = new jsPDF();
+	// 		const cols = ["no", "admission_number", "name", "attendance"];
 
-			for (const value of Object.values(subjects)) {
-				cols.push(value);
-			}
+	// 		for (const value of Object.values(subjects)) {
+	// 			cols.push(value);
+	// 		}
 
-			cols.push("total_mark","status", "rank");
-			const rows = Object.values(data).map((obj, index) => [
-				index + 1,
-				...cols.slice(1).map((key) => String(obj[key as keyof Student] ?? "")),
-			]);
-			cols[1] = "adm";
-			cols[3] = "hajar";
-			cols[cols.length - 3] = "total";
-			const colIndex = cols.indexOf("lis_quran");
-			if (colIndex !== -1) {
-				cols[colIndex] = "lisan";
-			}
+	// 		cols.push("total_mark","status", "rank");
+	// 		const rows = Object.values(data).map((obj, index) => [
+	// 			index + 1,
+	// 			...cols.slice(1).map((key) => String(obj[key as keyof Student] ?? "")),
+	// 		]);
+	// 		cols[1] = "adm";
+	// 		cols[3] = "hajar";
+	// 		cols[cols.length - 3] = "total";
+	// 		const colIndex = cols.indexOf("lis_quran");
+	// 		if (colIndex !== -1) {
+	// 			cols[colIndex] = "lisan";
+	// 		}
 			
-			if(selectedClass === "1"){
-				cols[4] = "thafhim(R)";
-				cols[5] = "thafhim(W)";
-				cols[6] = "duroos(R)";
-				cols[7] = "duroos(W)";
-				cols[9] = "listen";
-			}
+	// 		if(selectedClass === "1"){
+	// 			cols[4] = "thafhim(R)";
+	// 			cols[5] = "thafhim(W)";
+	// 			cols[6] = "duroos(R)";
+	// 			cols[7] = "duroos(W)";
+	// 			cols[9] = "listen";
+	// 		}
 
-			const text = ` Total students : ${data.length}/${studentCount[Number(selectedClass)]}`;
-			doc.setFontSize(12);
-			doc.text(` Class-${selectedClass}`, 12, 10, { align: "left" });
-			doc.text(text, 12, 14, { align: "left" });
+	// 		const text = ` Total students : ${data.length}/${studentCount[Number(selectedClass)]}`;
+	// 		doc.setFontSize(12);
+	// 		doc.text(` Class-${selectedClass}`, 12, 10, { align: "left" });
+	// 		doc.text(text, 12, 14, { align: "left" });
 
-			autoTable(doc, {
-				head: [cols],
-				body: rows,
-				margin: { top: 20 },
-				styles: { cellPadding: 2, fontSize: 8 },
-				tableWidth: "wrap",
-				showHead: "everyPage",
-				theme: "grid",
-			});
-			// autoTable(doc, {
-			// 	head: [cols],
-			// 	body: rows,
-			// });
+	// 		autoTable(doc, {
+	// 			head: [cols],
+	// 			body: rows,
+	// 			margin: { top: 20 },
+	// 			styles: { cellPadding: 2, fontSize: 8 },
+	// 			tableWidth: "wrap",
+	// 			showHead: "everyPage",
+	// 			theme: "grid",
+	// 		});
+	// 		// autoTable(doc, {
+	// 		// 	head: [cols],
+	// 		// 	body: rows,
+	// 		// });
 
-			doc.save(`Class_${selectedClass}_data.pdf`);
-			toast.success("Download successful!", { id: toastId, duration: 2000 });
-		}
-	};
+	// 		doc.save(`Class_${selectedClass}_data.pdf`);
+	// 		toast.success("Download successful!", { id: toastId, duration: 2000 });
+	// 	}
+	// };
 
 	const generatePDF = () => {
 		const toastId = toast.loading("Downloading mark list...");

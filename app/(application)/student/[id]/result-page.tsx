@@ -1,7 +1,7 @@
 "use client";
 import { Download } from "lucide-react";
 import jsPDF from "jspdf";
-import { classSubjects, malayalamText, subjectText } from "@/utils/class-datas";
+//import { classSubjects, malayalamText, subjectText } from "@/utils/class-datas";
 import type { Student } from "@/types";
 import { Button } from "@/components/ui/button";
 import autoTable from "jspdf-autotable";
@@ -11,8 +11,8 @@ import Confetti from "react-confetti";
 import { useEffect, useState } from "react";
 
 export default function ResultPage({ studentData }: { studentData: Student }) {
-	const subjects = classSubjects[Number(studentData.class)];
-	const schoolName = "SUBULULHUDA HIGHER SECONDARY MADRASA";
+	//const subjects = classSubjects[Number(studentData.class)];
+	//const schoolName = "SUBULULHUDA HIGHER SECONDARY MADRASA";
 
 	const showConfetti = studentData.status === "passed";
 	const [opacity, setOpacity] = useState(1);
