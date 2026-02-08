@@ -198,7 +198,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 							</div>
 							<div className="glass p-4 rounded-xl border-l-4 border-l-pink-500">
 								<p className="text-xs text-gray-400 mb-1">Attendance</p>
-								<p className="text-lg font-bold text-white">{studentData.attendance}</p>
+								<p className="text-lg font-bold text-white">{((Number(studentData.attendance) / 230) * 100).toFixed(0)}%</p>
 							</div>
 						</div>
 
