@@ -14,23 +14,37 @@ import { cookies } from "next/headers";
 import type { Student } from "@/types";
 import { revalidateTag, unstable_cache } from "next/cache";
 
-async function getStudentDataByID(selectedClass: string, reg: string) {
-	try {
-		const q = query(
-			collection(db, selectedClass),
-			where("admission_number", "==", Number(reg)),
-		);
-		const snapDoc = await getDocs(q);
-		// const dataList = snapDoc.docs.map((doc) => ({
-		// 	id: doc.id,
-		// 	...doc.data(),
-		// }));
-		return snapDoc;
-	} catch (error) {
-		console.log(" Error fetching data :", error);
-		throw new Error(" Error retrieving student data");
-	}
-}
+export const getStudentData = async (
+	selectedClass: string,
+	admissionNumber: string,
+) => {
+	const cachedData = unstable_cache(
+		async () => {
+			try {
+				const q = query(
+					collection(db, selectedClass),
+					where("admission_number", "==", Number(admissionNumber)),
+				);
+				const snapDoc = await getDocs(q);
+				if (snapDoc.empty) return null;
+
+				return {
+					id: snapDoc.docs[0].id,
+					...snapDoc.docs[0].data(),
+				} as Student;
+			} catch (error) {
+				console.log(" Error fetching data :", error);
+				throw new Error(" Error retrieving student data");
+			}
+		},
+		[`class-${selectedClass}`, `student-${admissionNumber}`],
+		{
+			tags: [`class-${selectedClass}`, `student-${admissionNumber}`],
+		},
+	);
+
+	return cachedData();
+};
 
 export async function updateStudent(
 	selectedClass: string,
@@ -55,13 +69,12 @@ export async function studentLogin(
 
 	try {
 		console.log(selectedClass);
-		const student = await getStudentDataByID(selectedClass, admissionNumber);
+		studentData = await getStudentData(selectedClass, admissionNumber);
 
-		if (student.empty) {
+		if (!studentData) {
 			throw new Error("Invalid admission number");
 		}
 
-		studentData = student.docs[0].data() as Student;
 		const cookieStore = await cookies();
 		const cookie = JSON.stringify(studentData);
 		cookieStore.set("student_data", cookie, {
@@ -70,7 +83,6 @@ export async function studentLogin(
 			sameSite: "strict",
 			httpOnly: true,
 		});
-		studentData.id = student.docs[0].id;
 	} catch (error) {
 		console.log(error);
 		throw new Error("Error retrieving student data");
