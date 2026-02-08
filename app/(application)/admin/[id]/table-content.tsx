@@ -61,10 +61,13 @@ export default function TableContent({
 	const [searchTerm, setSearchTerm] = useState("");
 
 	async function signOut() {
+		const toastId = toast.loading("Signing out...");
 		try {
 			await logout();
+			toast.success("Signed out successfully", { id: toastId });
 			window.location.href = "/";
 		} catch (error) {
+			toast.error("Error signing out", { id: toastId });
 			console.error("Error signing out:", error);
 		}
 	}

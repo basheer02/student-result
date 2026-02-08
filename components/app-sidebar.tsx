@@ -2,6 +2,7 @@
 import { GraduationCap, HomeIcon, LogOut, ChartBar } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { logout } from "@/utils/actions";
+import { toast } from "sonner";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -80,10 +81,13 @@ export function AppSidebar() {
 	const { setOpenMobile } = useSidebar();
 
 	async function signOut() {
+		const toastId = toast.loading("Signing out...");
 		try {
 			await logout();
+			toast.success("Signed out successfully", { id: toastId });
 			window.location.href = "/";
 		} catch (error) {
+			toast.error("Error signing out", { id: toastId });
 			throw new Error(`Some error occured, logout again : ${error}`);
 		}
 	}
