@@ -23,7 +23,7 @@ export default async function Layout({
 				<h3 className="p-2 text-white text-center arabic-text">
 					مدرسة سبل اله‍دى الثانوية العليا
 				</h3>
-				<h3 className="text-2xl text-white font-bold text-center">
+				<h3 className="text-2xl text-white font-bold text-center p-1">
 					SUBULULHUDA HIGHER SECONDARY MADRASA
 				</h3>
 				{children}

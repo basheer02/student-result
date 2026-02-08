@@ -11,9 +11,8 @@ export default async function Page() {
 		}
 
 		const studentData = JSON.parse(cookie.value) as Student;
-
 		return (
-			<main className="h-[100vh]">
+			<main className="min-h-screen">
 				<ResultPage studentData={studentData} />
 			</main>
 		);

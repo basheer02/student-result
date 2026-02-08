@@ -2,10 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { adminLogin, studentLogin } from "@/utils/actions";
-import { ChevronRightIcon, User, UserCog } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-//import { format } from "date-fns";
 
 import Img1 from "../public/1.jpeg";
 import Img2 from "../public/2.jpeg";
@@ -16,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
+import { Autoplay, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/effect-fade";
 
@@ -28,267 +27,314 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Loader2, Sparkles, GraduationCap, ShieldCheck } from "lucide-react";
 
 const Images = [Img1, Img2, Img3, Img4, Img5];
 
 export default function LandingPage() {
-	const [showStudent, setShowStudent] = useState(true);
-	const [showAdmin, setShowAdmin] = useState(false);
+	const [activeTab, setActiveTab] = useState<"student" | "admin">("student");
+	const [selectedClass, setSelectedClass] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
 
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const handleOpenModal = () => setIsModalOpen(true);
-
-	const [currentRole, setCurrentRole] = useState("Student");
-	const [showList, setShowList] = useState(false);
-	const roles = currentRole === "Student" ? "Admin" : "Student";
-
-	const [isMobile, setIsMobile] = useState(false);
-	
-
-	const targetDateIST = new Date("2025-03-17T02:00:00Z"); // UTC time
-	const now = new Date();
-	const resultPublished = now >= targetDateIST;
+	// Result publishing logic
+	const [resultPublished, setResultPublished] = useState(true);
 
 	useEffect(() => {
-		// Check window only after component mounts
-		setIsMobile(window.matchMedia("(max-width: 1024px)").matches);
+		const targetDateIST = new Date("2025-03-17T02:00:00Z");
+		const now = new Date();
+		setResultPublished(now >= targetDateIST);
 	}, []);
-
-	const [selectedClass, setSelectedClass] = useState("");
-
-	const handleToggle = () => {
-		setShowStudent(!showStudent);
-		setShowAdmin(!showAdmin);
-	};
 
 	const handleAdminLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const toastId = toast.loading("Verifying...");
+		setIsLoading(true);
+		const toastId = toast.loading("Verifying admin credentials...");
 
 		const formData = new FormData(e.currentTarget);
 		try {
 			await adminLogin(formData);
-			toast.success("Successful!", { id: toastId, duration: 2000 });
+			toast.success("Welcome back, Admin!", { id: toastId, duration: 2000 });
 		} catch (error) {
 			if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
-				toast.success("Successful!", { id: toastId, duration: 2000 });
+				toast.success("Welcome back, Admin!", { id: toastId, duration: 2000 });
 			} else {
 				toast.error("Verification failed!", { id: toastId, duration: 2000 });
+				setIsLoading(false);
 			}
 		}
 	};
 
 	const handleStudentLogin = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const toastId = toast.loading("Verifying...");
+		if (!selectedClass) {
+			toast.error("Please select a class first");
+			return;
+		}
+		setIsLoading(true);
+		const toastId = toast.loading("Searching for result...");
 
 		const formData = new FormData(e.currentTarget);
 		const admNumber = formData.get("admission-number") as string;
 
 		try {
 			await studentLogin(selectedClass, admNumber);
-			toast.success("Successful!", { id: toastId, duration: 2000 });
+			toast.success("Result found!", { id: toastId, duration: 2000 });
 		} catch (error) {
 			if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
-				toast.success("Successful!", { id: toastId, duration: 2000 });
+				toast.success("Result found!", { id: toastId, duration: 2000 });
 			} else {
-				toast.error("Invalid admission number", {
+				toast.error("Invalid admission number or class", {
 					id: toastId,
 					duration: 2000,
 				});
+				setIsLoading(false);
 			}
 		}
 	};
 
-	const LoginForm = () => {
-		return (
-			<div className="p-4 rounded-md mt-2">
-				<form
-					className="w-full md:p-6"
-					onSubmit={showAdmin ? handleAdminLogin : handleStudentLogin}
-				>
-					<h2 className="text-2xl text-gray-200 font-bold text-center">
-						{showAdmin ? "Admin Login" : "Annual Examination Result"}
-					</h2>
-					{showStudent && (
-						<Select
-							value={selectedClass}
-							onValueChange={(value) => setSelectedClass(value)}
-						>
-							<SelectTrigger className="mt-10 bg-gray-200 text-gray-900 p-4">
-								<SelectValue placeholder="Select your class" />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectGroup>
-									<SelectItem value="class-1">Class-1</SelectItem>
-									<SelectItem value="class-2">Class-2</SelectItem>
-									<SelectItem value="class-3">Class-3</SelectItem>
-									<SelectItem value="class-4">Class-4</SelectItem>
-									<SelectItem value="class-6">Class-6</SelectItem>
-									<SelectItem value="class-8">Class-8</SelectItem>
-									<SelectItem value="class-9">Class-9</SelectItem>
-									<SelectItem value="class-11">Class-11</SelectItem>
-								</SelectGroup>
-							</SelectContent>
-						</Select>
-					)}
-					<div className="mt-4 text-gray-400 py-3">
-						<Label htmlFor="username">
-							{showAdmin ? "Username" : "Admission number"}
-						</Label>
-						<Input
-							className="p-4 rounded-lg bg-gray-200 mt-2 focus:border-blue-500 text-gray-900 focus:outline-none"
-							type={showAdmin ? "text" : "number"}
-							required
-							id={showAdmin ? "username" : "admission-number"}
-							name={showAdmin ? "username" : "admission-number"}
-							placeholder={
-								showAdmin ? "Enter username" : "Enter admission number"
-							}
-						/>
-					</div>
-					{showAdmin && (
-						<div className="mt-2 text-gray-400 py-3">
-							<Label htmlFor="password">Password</Label>
-							<Input
-								className="p-4 rounded-lg bg-gray-200 mt-2 focus:border-blue-500 text-gray-900 focus:outline-none"
-								type="password"
-								required
-								id="password"
-								name="password"
-								placeholder="Enter your password"
-							/>
-						</div>
-					)}
-					<div className="py-4">
-						<Button
-							className="w-full mt-3 text-white bg-teal-600 font-semibold hover:bg-teal-600/40"
-							type="submit"
-						>
-							{showAdmin ? "Login" : "Check Result"}
-						</Button>
-					</div>
-				</form>
-			</div>
-		);
-	};
-
 	return (
-		<main>
-			<div className="flex flex-col w-screen h-screen mx-auto shadow-md bg-gray-900 p-2 relative">
-				<div className="flex flex-col p-1 absolute md:top-4 md:right-4 bottom-4 left-4 md:bottom-auto md:left-auto bg-gray-900 items-center cursor-pointer rounded-lg">
-					<Button
-						className="bg-gray-900"
-						onClick={() => {
-							setShowList(!showList);
-						}}
-					>
-						<ChevronRightIcon
-							className={`mr-2 transition-transform duration-300 ${showList ? "md:rotate-90 -rotate-90" : "rotate-0"}`}
-							size={20}
-						/>
-						<span className="mr-2 font-bold">{currentRole}</span>
-						{currentRole === "Student" ? (
-							<User size={20} className="text-gray-100" />
-						) : (
-							<UserCog size={20} className="text-gray-100" />
-						)}
-					</Button>
-					{showList && (
-						<div className="absolute left-0 bg-gray-900 rounded-lg w-full md:top-full bottom-full md:bottom-auto">
-							<Button
-								className="bg-gray-900"
-								onClick={() => {
-									setShowList(!showList);
-									setCurrentRole(roles);
-									handleToggle();
-								}}
-							>
-								<span className="ml-8">{roles}</span>
-								{roles === "Student" ? (
-									<User size={20} className="text-gray-100" />
-								) : (
-									<UserCog size={20} className="text-gray-100" />
-								)}
-							</Button>
-						</div>
-					)}
-				</div>
-				<h3 className="p-2 text-white text-center arabic-text">
-					مدرسة سبل اله‍دى الثانوية العليا
-				</h3>
-				<h3 className="text-2xl text-white font-bold text-center">
-					SUBULULHUDA HIGHER SECONDARY MADRASA
-				</h3>
-				<h4 className="text-l text-white text-center font-bold">
-					CHENAKKALANGADI
-				</h4>
-				<div className="mt-4 rounded lg:flex">
-					<Swiper
-						modules={[Autoplay]}
-						autoplay={{ delay: 2000 }}
-						loop
-						speed={1000} // Slower fade transition
-						className="max-w-[900px]"
-					>
-						{Images.map((src, index) => (
-							<SwiperSlide
-								// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-								key={index}
-							>
-								<Image
-									src={src}
-									alt={`Slide ${index + 1}`}
-									className="h-[400px] lg:h-[600px] object-contain"
-								/>
-							</SwiperSlide>
-						))}
-					</Swiper>
-					{(showAdmin || (showStudent && resultPublished)) && (
-						<div className="p-3">
-							<Button
-								variant="secondary"
-								className="mt-4 w-full lg:hidden"
-								onClick={handleOpenModal}
-							>
-								{showAdmin ? "Login" : "Check Result"}
-							</Button>
-						</div>
-					)}
-					{!isMobile && (showAdmin || (showStudent && resultPublished)) && (
-						<div className="m-6 mr-12 p-6 border-t w-[500px] rounded-lg md:h-[450px]">
-							{showStudent && resultPublished && <LoginForm />}
-							{showAdmin && <LoginForm />}
-						</div>
-					)}
-				</div>
-				{/* {!resultPublished && (
-					<div className="p-3 rounded-lg">
-						<span className="p-4 block text-center border-t border rounded-md border-gray-400 text-red-500 font-bold">
-							Annual Examination Result will be published on{" "}
-							{format(new Date("2025-03-17T07:30:00"), "MMMM d,h:mm a ")}
-							IST
-						</span>
+		<main className="min-h-screen flex items-center justify-center w-full max-w-full overflow-x-hidden bg-black/20">
+			<div className="w-full max-w-7xl flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-16 items-center mx-auto px-4 sm:px-6 lg:px-8">
+				{/* Left Side: Visuals & Info */}
+				<motion.div
+					initial={{ opacity: 0, x: -50 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.8 }}
+					className="flex flex-col space-y-4 md:space-y-6 order-1 w-full items-center lg:items-start"
+				>
+					<div className="space-y-2 text-center lg:text-left w-full max-w-full px-0 sm:px-2">
+						<motion.div
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ delay: 0.2 }}
+							className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-300 text-sm font-medium mb-4"
+						>
+							<Sparkles size={14} className="mr-2" />
+							Annual Examination Results 2025-26
+						</motion.div>
+						<h1 className="text-xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-white mb-2 arabic-text break-words max-w-full leading-relaxed py-1">
+							مدرسة سبل اله‍دى الثانوية العليا
+						</h1>
+						<h2 className="text-sm md:text-2xl lg:text-3xl font-bold text-gray-200 break-words max-w-full leading-normal">
+							SUBULULHUDA HIGHER SECONDARY MADRASA
+						</h2>
+						<p className="text-xs md:text-lg text-gray-400 font-medium tracking-wide">
+							CHENAKKALANGADI
+						</p>
 					</div>
-				)}
-				{resultPublished && (
-					<div className="p-3 rounded-lg">
-						<span className="p-4 block text-center border-t border rounded-md border-gray-400 text-red-500 font-bold">
-							Annual Examination Result published
-						</span>
+
+					<div className="relative rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-video w-full max-w-lg mx-auto lg:mx-0 bg-black/50 mt-4 lg:mt-0">
+						<Swiper
+							modules={[Autoplay, EffectFade]}
+							effect="fade"
+							autoplay={{ delay: 3500, disableOnInteraction: false }}
+							loop
+							speed={1000}
+							className="h-full w-full"
+						>
+							{Images.map((src, index) => (
+								<SwiperSlide key={index}>
+									<Image
+										src={src}
+										alt={`Slide ${index + 1}`}
+										fill
+										className="object-cover opacity-80"
+										priority={index === 0}
+									/>
+									<div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-60" />
+								</SwiperSlide>
+							))}
+						</Swiper>
 					</div>
-				)} */}
-				{isModalOpen && (
-					<div className="fixed inset-0 px-4 bg-gray-500/50 backdrop-blur-sm z-50 flex justify-center items-center">
-						<div className="flex items-center justify-center h-full w-full">
-							<div className="max-w-[400px] w-full mx-auto rounded-lg bg-gray-900 p-8 px-10 shadow-xl shadow-gray-500/50">
-								{showStudent && resultPublished && <LoginForm />}
-								{showAdmin && <LoginForm />}
+				</motion.div>
+
+				{/* Right Side: Login Form */}
+				<motion.div
+					initial={{ opacity: 0, x: 50 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.8, delay: 0.2 }}
+					className="order-2 w-full max-w-md mx-auto"
+				>
+					<div className="glass-card p-1">
+						<div className="bg-gray-900/40 backdrop-blur-xl rounded-xl p-3 md:p-6 lg:p-8 border border-white/5 shadow-inner">
+							{/* Tab Switcher */}
+							<div className="grid grid-cols-2 gap-2 p-1 bg-gray-950/50 rounded-lg mb-8">
+								<button
+									onClick={() => setActiveTab("student")}
+									className={`relative flex items-center justify-center py-1.5 md:py-2.5 text-xs md:text-sm font-medium rounded-md transition-all duration-300 ${activeTab === "student"
+										? "text-white"
+										: "text-gray-400 hover:text-gray-200"
+										}`}
+								>
+									{activeTab === "student" && (
+										<motion.span
+											layoutId="activeTab"
+											className="absolute inset-0 bg-teal-600 rounded-md shadow-lg shadow-teal-900/20"
+											transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+										/>
+									)}
+									<span className="relative z-10 flex items-center">
+										<GraduationCap size={18} className="mr-2" />
+										Student
+									</span>
+								</button>
+								<button
+									onClick={() => setActiveTab("admin")}
+									className={`relative flex items-center justify-center py-1.5 md:py-2.5 text-xs md:text-sm font-medium rounded-md transition-all duration-300 ${activeTab === "admin"
+										? "text-white"
+										: "text-gray-400 hover:text-gray-200"
+										}`}
+								>
+									{activeTab === "admin" && (
+										<motion.span
+											layoutId="activeTab"
+											className="absolute inset-0 bg-indigo-600 rounded-md shadow-lg shadow-indigo-900/20"
+											transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+										/>
+									)}
+									<span className="relative z-10 flex items-center">
+										<ShieldCheck size={18} className="mr-2" />
+										Admin
+									</span>
+								</button>
+							</div>
+
+							<div className="min-h-[320px]">
+								<AnimatePresence mode="wait">
+									{activeTab === "student" ? (
+										<motion.form
+											key="student-form"
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: -10 }}
+											transition={{ duration: 0.3 }}
+											onSubmit={handleStudentLogin}
+											className="space-y-5"
+										>
+											{!resultPublished ? (
+												<div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
+													<p className="text-red-400 font-semibold mb-1">Results Not Published Yet</p>
+													<p className="text-xs text-red-300/80">
+														Publishing on March 17, 7:30 AM
+													</p>
+												</div>
+											) : (
+												<>
+													<div className="text-center mb-6">
+														<h3 className="text-xl md:text-2xl font-bold text-white mb-1">Check Result</h3>
+														<p className="text-sm text-gray-400">
+															Enter your details to view marks
+														</p>
+													</div>
+													<div className="space-y-2">
+														<Label className="text-gray-300">Class</Label>
+														<Select
+															value={selectedClass}
+															onValueChange={setSelectedClass}
+														>
+															<SelectTrigger className="bg-gray-800/50 border-gray-700 text-gray-100 h-9 md:h-12 text-sm md:text-base">
+																<SelectValue placeholder="Select Class" />
+															</SelectTrigger>
+															<SelectContent className="bg-gray-900 border-gray-800 text-gray-100">
+																<SelectGroup>
+																	{["class-1", "class-2", "class-3", "class-4", "class-6", "class-8", "class-9", "class-11"].map((cls) => (
+																		<SelectItem key={cls} value={cls} className="focus:bg-gray-800 focus:text-white cursor-pointer transition-colors duration-200">
+																			{cls.replace("class-", "Class ")}
+																		</SelectItem>
+																	))}
+																</SelectGroup>
+															</SelectContent>
+														</Select>
+													</div>
+
+													<div className="space-y-2">
+														<Label htmlFor="admission-number" className="text-gray-300">
+															Admission Number
+														</Label>
+														<Input
+															id="admission-number"
+															name="admission-number"
+															type="number"
+															placeholder="Ex: 1234"
+															required
+															className="bg-gray-800/50 border-gray-700 text-gray-100 h-9 md:h-12 text-sm md:text-base focus:ring-teal-500/50 focus:border-teal-500 transition-all duration-300"
+														/>
+													</div>
+
+													<Button
+														type="submit"
+														disabled={isLoading}
+														className="w-full h-9 md:h-12 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white font-bold shadow-lg shadow-teal-900/20 transition-all duration-300 rounded-lg text-sm md:text-base"
+													>
+														{isLoading ? (
+															<Loader2 className="animate-spin mr-2" />
+														) : (
+															"View Result"
+														)}
+													</Button>
+												</>
+											)}
+										</motion.form>
+									) : (
+										<motion.form
+											key="admin-form"
+											initial={{ opacity: 0, y: 10 }}
+											animate={{ opacity: 1, y: 0 }}
+											exit={{ opacity: 0, y: -10 }}
+											transition={{ duration: 0.3 }}
+											onSubmit={handleAdminLogin}
+											className="space-y-5"
+										>
+											<div className="text-center mb-6">
+												<h3 className="text-2xl font-bold text-white mb-1">Admin Access</h3>
+												<p className="text-sm text-gray-400">
+													Secure login for faculty
+												</p>
+											</div>
+
+											<div className="space-y-2">
+												<Label htmlFor="username" className="text-gray-300">Username</Label>
+												<Input
+													id="username"
+													name="username"
+													type="text"
+													required
+													placeholder="Enter username"
+													className="bg-gray-800/50 border-gray-700 text-gray-100 h-9 md:h-12 text-sm md:text-base focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300"
+												/>
+											</div>
+
+											<div className="space-y-2">
+												<Label htmlFor="password" className="text-gray-300">Password</Label>
+												<Input
+													id="password"
+													name="password"
+													type="password"
+													required
+													placeholder="••••••••"
+													className="bg-gray-800/50 border-gray-700 text-gray-100 h-9 md:h-12 text-sm md:text-base focus:ring-indigo-500/50 focus:border-indigo-500 transition-all duration-300"
+												/>
+											</div>
+
+											<Button
+												type="submit"
+												disabled={isLoading}
+												className="w-full h-9 md:h-12 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold shadow-lg shadow-indigo-900/20 transition-all duration-300 rounded-lg text-sm md:text-base"
+											>
+												{isLoading ? (
+													<Loader2 className="animate-spin mr-2" />
+												) : (
+													"Login to Dashboard"
+												)}
+											</Button>
+										</motion.form>
+									)}
+								</AnimatePresence>
 							</div>
 						</div>
 					</div>
-				)}
-			</div>
-		</main>
+				</motion.div>
+			</div >
+		</main >
 	);
 }

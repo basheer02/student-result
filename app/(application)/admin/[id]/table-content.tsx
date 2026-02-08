@@ -1,6 +1,6 @@
 "use client";
 import type { Student } from "@/types";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
 	Table,
 	TableBody,
@@ -25,15 +25,26 @@ import { toast } from "sonner";
 import * as XLSX from "xlsx";
 import {
 	AlertCircle,
-	CheckCircle,
+	CheckCircle2,
 	ChevronRightIcon,
 	Download,
 	LogOut,
-	UserCog,
+	MoreVertical,
+	UploadCloud,
+	Pencil,
+	Search
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-//import { saveAs } from "file-saver";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 export default function TableContent({
 	classData,
@@ -47,39 +58,45 @@ export default function TableContent({
 	const [data, setData] = useState(classData);
 	const [selectedStudent, setSelectedStudent] = useState<Student | null>();
 	const [showStudentForm, setshowStudentForm] = useState(false);
+	const [searchTerm, setSearchTerm] = useState("");
 
-	const [isOpen, setIsOpen] = useState(false);
-
-	const toggleDropdown = () => setIsOpen(!isOpen);
 	async function signOut() {
-			try {
-				await logout();
-				window.location.href = "/";
-			} catch (error) {
-				console.error("Error signing out:", error);
-			}
+		try {
+			await logout();
+			window.location.href = "/";
+		} catch (error) {
+			console.error("Error signing out:", error);
 		}
+	}
 
-	data.sort((a, b) => {
-		if (a.status === "failed") return 1;
-		if (b.status === "failed") return -1;
-		return a.rank - b.rank;
-	});
+	const sortedData = useMemo(() => {
+		return [...data].sort((a, b) => {
+			if (a.status === "failed") return 1;
+			if (b.status === "failed") return -1;
+			return a.rank - b.rank;
+		});
+	}, [data]);
+
+	// Filter data based on search
+	const filteredData = useMemo(() => {
+		return sortedData.filter(student =>
+			student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+			student.admission_number.toString().includes(searchTerm)
+		);
+	}, [sortedData, searchTerm]);
 
 	const table = useReactTable({
-		data: data,
+		data: filteredData,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
 	});
 
-	const uploadButton = data.length !== studentCount[Number(selectedClass)];
-
-	//console.log(selectedStudent)
-	const subjects = classSubjects[Number(selectedClass)];
+	const uploadButton = useMemo(() => data.length !== studentCount[Number(selectedClass)], [data.length, selectedClass]);
+	const subjects = useMemo(() => classSubjects[Number(selectedClass)], [selectedClass]);
 
 	const editStudentData = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const toastId = toast.loading("Updating...");
+		const toastId = toast.loading("Updating records...");
 
 		const formData = new FormData(e.currentTarget);
 		const updatedData: Partial<Student> = {
@@ -126,20 +143,20 @@ export default function TableContent({
 				if (isUpdateRank) {
 					const newData = data.map((student) =>
 						student.id === selectedStudent.id
-							? { ...student, ...updatedData } // Merge new marks with existing student data
+							? { ...student, ...updatedData }
 							: student,
 					);
 
 					const success = await updateRank("update", newData);
 
 					if (success) {
-						toast.success("Update successful!", {
+						toast.success("Student updated successfully!", {
 							id: toastId,
 							duration: 2000,
 						});
 						setshowStudentForm(false);
 					} else {
-						toast.error("Update failed!, try again", {
+						toast.error("Failed to re-calculate ranks.", {
 							id: toastId,
 							duration: 2000,
 						});
@@ -148,16 +165,16 @@ export default function TableContent({
 					setData((prevData) =>
 						prevData.map((student) =>
 							student.id === selectedStudent.id
-								? { ...student, ...updatedData } // Merge new marks with existing student data
+								? { ...student, ...updatedData }
 								: student,
 						),
 					);
-					toast.success("Update successful!", { id: toastId, duration: 2000 });
+					toast.success("Student updated successfully!", { id: toastId, duration: 2000 });
 					setshowStudentForm(false);
 				}
 			} catch (error) {
 				console.log(error);
-				toast.error("Update failed!, try again", {
+				toast.error("Update failed. Check connection.", {
 					id: toastId,
 					duration: 2000,
 				});
@@ -165,9 +182,7 @@ export default function TableContent({
 		}
 	};
 
-	const updateRank = async (addOrUpdate: string, studentData: Student[]) => {
-		//console.log(studentData)
-
+	const updateRank = async (addOrUpdate: string, studentData: Student[]): Promise<boolean> => {
 		const passedStudents = studentData.filter(
 			(student: { status: string }) => student.status === "passed",
 		);
@@ -183,17 +198,14 @@ export default function TableContent({
 			const student = passedStudents[i];
 
 			if (i > 0 && student.total_mark === passedStudents[i - 1].total_mark) {
-				// If the current student's total mark is the same as the previous one, assign the same rank
 				student.rank = passedStudents[i - 1].rank;
 			} else {
-				// Otherwise, assign the current rank
 				student.rank = currentRank;
 				currentRank++;
 			}
 		}
 
 		try {
-			//let formattedStudentData = [...passedStudents];
 			if (addOrUpdate === "add") {
 				const formattedStudentData = [...passedStudents, ...failedStudents];
 				const res = await addStudentData(
@@ -203,13 +215,9 @@ export default function TableContent({
 				);
 
 				if (data.length !== 0) {
-					// if data already exists, update ranks
 					const dataToUpdate = [...data, ...res];
 					const success = await updateRank("update", dataToUpdate);
-					if (success) {
-						return true;
-					}
-					return false;
+					return success;
 				}
 				setData(res);
 				return true;
@@ -232,7 +240,7 @@ export default function TableContent({
 	) => {
 		if (event.target.files && event.target.files.length > 0) {
 			const file = event.target.files[0];
-			const toastId = toast.loading("Uploading student data...");
+			const toastId = toast.loading("Processing upload...");
 
 			const reader = new FileReader();
 			reader.readAsArrayBuffer(file);
@@ -241,7 +249,7 @@ export default function TableContent({
 				const bufferArray = e.target?.result;
 				const workbook = XLSX.read(bufferArray, { type: "array" });
 
-				const sheetName = workbook.SheetNames[0]; // Get first sheet
+				const sheetName = workbook.SheetNames[0];
 				const sheet = workbook.Sheets[sheetName];
 
 				const newHeaders = [
@@ -284,9 +292,9 @@ export default function TableContent({
 
 				const success = await updateRank("add", dataRows);
 				if (success) {
-					toast.success("Upload successful!", { id: toastId, duration: 2000 });
+					toast.success("Data uploaded successfully!", { id: toastId, duration: 2000 });
 				} else {
-					toast.error("Upload failed!, try again", {
+					toast.error("Upload failed.", {
 						id: toastId,
 						duration: 2000,
 					});
@@ -295,77 +303,16 @@ export default function TableContent({
 		}
 	};
 
-	// const downloadPDF = () => {
-	// 	setIsOpen(false);
-	// 	if (data.length === 0) {
-	// 		toast.error("No data to download!");
-	// 	} else {
-	// 		const toastId = toast.loading("Downloading student data...");
-	// 		const doc = new jsPDF();
-	// 		const cols = ["no", "admission_number", "name", "attendance"];
-
-	// 		for (const value of Object.values(subjects)) {
-	// 			cols.push(value);
-	// 		}
-
-	// 		cols.push("total_mark","status", "rank");
-	// 		const rows = Object.values(data).map((obj, index) => [
-	// 			index + 1,
-	// 			...cols.slice(1).map((key) => String(obj[key as keyof Student] ?? "")),
-	// 		]);
-	// 		cols[1] = "adm";
-	// 		cols[3] = "hajar";
-	// 		cols[cols.length - 3] = "total";
-	// 		const colIndex = cols.indexOf("lis_quran");
-	// 		if (colIndex !== -1) {
-	// 			cols[colIndex] = "lisan";
-	// 		}
-			
-	// 		if(selectedClass === "1"){
-	// 			cols[4] = "thafhim(R)";
-	// 			cols[5] = "thafhim(W)";
-	// 			cols[6] = "duroos(R)";
-	// 			cols[7] = "duroos(W)";
-	// 			cols[9] = "listen";
-	// 		}
-
-	// 		const text = ` Total students : ${data.length}/${studentCount[Number(selectedClass)]}`;
-	// 		doc.setFontSize(12);
-	// 		doc.text(` Class-${selectedClass}`, 12, 10, { align: "left" });
-	// 		doc.text(text, 12, 14, { align: "left" });
-
-	// 		autoTable(doc, {
-	// 			head: [cols],
-	// 			body: rows,
-	// 			margin: { top: 20 },
-	// 			styles: { cellPadding: 2, fontSize: 8 },
-	// 			tableWidth: "wrap",
-	// 			showHead: "everyPage",
-	// 			theme: "grid",
-	// 		});
-	// 		// autoTable(doc, {
-	// 		// 	head: [cols],
-	// 		// 	body: rows,
-	// 		// });
-
-	// 		doc.save(`Class_${selectedClass}_data.pdf`);
-	// 		toast.success("Download successful!", { id: toastId, duration: 2000 });
-	// 	}
-	// };
-
 	const generatePDF = () => {
-		const toastId = toast.loading("Downloading mark list...");
+		const toastId = toast.loading("Generating class report...");
 		const doc = new jsPDF();
 
-
-		// Calculate total width of the table
 		const pageWidth = doc.internal.pageSize.getWidth();
 		const marginLeft = (pageWidth - 140) / 2;
 
 		let startY = 5;
 
 		for (const student of data) {
-			// Student details
 			const studentDetails = [
 				["Admission Number", student.admission_number],
 				["Class", selectedClass],
@@ -379,252 +326,300 @@ export default function TableContent({
 				styles: { halign: "center", fontSize: 12 },
 				headStyles: { fillColor: [22, 160, 133] },
 				columnStyles: {
-					0: { cellWidth: 70, textColor: [0, 0, 0] }, // First column width
-					1: { cellWidth: 70, textColor: [0, 0, 0], fontStyle: "bold" }, // Second column width
+					0: { cellWidth: 70, textColor: [0, 0, 0] },
+					1: { cellWidth: 70, textColor: [0, 0, 0], fontStyle: "bold" },
 				},
 				margin: { left: marginLeft, right: marginLeft },
 			});
 
-			// Add a gap between student details
 			startY += 40;
 
-			// Check if the next student details will exceed the page height
 			if (startY + 40 > doc.internal.pageSize.getHeight()) {
 				if (data.indexOf(student) !== data.length - 1) {
 					doc.addPage();
 				}
-				startY = 10; // Reset startY for the new page
+				startY = 10;
 			}
 		}
-		
-		//let startY = 50;
-		
-		// Save the PDF
+
 		doc.save(`class_${selectedClass}_list.pdf`);
-		toast.success("Download successful!", { id: toastId, duration: 2000 });
+		toast.success("PDF Downloaded!", { id: toastId, duration: 2000 });
 	};
 
-	// async function exportToExcel() {
-	// 	try {
-	// 		// Create a worksheet and workbook
-	// 		const worksheet = XLSX.utils.json_to_sheet(data);
-	// 		const workbook = XLSX.utils.book_new();
-	// 		XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
-
-	// 		// Generate and trigger the file download
-	// 		const excelBuffer = XLSX.write(workbook, {
-	// 			bookType: "xlsx",
-	// 			type: "array",
-	// 		});
-	// 		const excelBlob = new Blob([excelBuffer], {
-	// 			type: "application/octet-stream",
-	// 		});
-
-	// 		saveAs(excelBlob, "students.xlsx"); // File download
-	// 	} catch (error) {
-	// 		console.error("Error exporting data:", error);
-	// 	}
-	// }
 	return (
-		<div className="flex flex-col shadow-md mx-auto p-4">
-			<div className="absolute top-4 right-4 z-50">
-				<Button
-					variant={"ghost"}
-					className="bg-gray-200 hover:bg-gray-200"
-					onClick={toggleDropdown}
-				>
-					<ChevronRightIcon
-						className={`mr-2 text-gray-900 transition-transform duration-300 ${isOpen ? "rotate-90" : "rotate-0"}`}
-						size={20}
-					/>
-					<UserCog className="text-gray-900" size={24} />
-					<span className="mr-2 ml-2 font-bold text-gray-900">{`class-${selectedClass}`}</span>
-				</Button>
-				{isOpen && (
-					<div className="absolute bg-gray-200">
-						<Button
-							variant={"ghost"}
-							className="bg-gray-200 rounded hover:bg-gray-200"
-							onClick={generatePDF}
-						>
-							<Download className="ml-4 text-gray-900" size={24} />
-							<span className="mr-2 ml-2 text-gray-900">Download</span>
-						</Button>
-						<Button
-							variant={"ghost"}
-							className="bg-gray-200 hover:bg-gray-200"
-							onClick={signOut}
-						>
-							<LogOut className="ml-4 text-gray-900" size={24} />
-							<span className="mr-2 ml-2 text-gray-900">Logout</span>
-						</Button>
+		<div className="flex flex-col p-4 md:p-6 w-full max-w-[1600px] mx-auto space-y-6">
+			{/* Action Toolbar */}
+			<div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-900/40 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-lg">
+				<div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 w-full md:w-auto">
+					<h2 className="text-xl font-bold text-white flex items-center">
+						<span className="text-teal-400 mr-2">Class {selectedClass}</span>
+						<span className="text-gray-500 text-sm font-normal">| Management</span>
+					</h2>
+					<div className="hidden md:block h-6 w-px bg-white/10" />
+					<div className="flex items-center text-sm">
+						<span className="text-gray-400 mr-2">Status:</span>
+						{data.length === studentCount[Number(selectedClass)] ? (
+							<span className="flex items-center text-green-400 bg-green-500/10 px-2 py-1 rounded-full border border-green-500/20">
+								<CheckCircle2 size={14} className="mr-1" /> Complete
+							</span>
+						) : (
+							<span className="flex items-center text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">
+								<AlertCircle size={14} className="mr-1" />
+								{data.length}/{studentCount[Number(selectedClass)]} Uploaded
+							</span>
+						)}
 					</div>
-				)}
+				</div>
+
+				<div className="flex items-center gap-3 w-full md:w-auto">
+					<div className="relative w-full md:w-64">
+						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
+						<Input
+							placeholder="Search student..."
+							className="pl-9 bg-gray-800/50 border-gray-700 text-gray-200 focus:ring-teal-500/50"
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+						/>
+					</div>
+
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant="outline" className="border-gray-700 bg-gray-800/50 text-gray-200 hover:bg-gray-800">
+								<MoreVertical className="w-4 h-4" />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent className="bg-gray-900 border-gray-800 text-gray-200 md:mr-20 mr-8 mt-2">
+							<DropdownMenuLabel>Actions</DropdownMenuLabel>
+							<DropdownMenuSeparator className="bg-gray-800" />
+							<DropdownMenuItem onClick={generatePDF} className="hover:bg-gray-800 cursor-pointer">
+								<Download className="mr-2 h-4 w-4" /> Download Report
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={signOut} className="hover:bg-red-900/20 text-red-400 cursor-pointer">
+								<LogOut className="mr-2 h-4 w-4" /> Sign Out
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
 			</div>
-			<div className="flex bg-white border shadow-md max-h-[70vh]">
-				<Table className="overflow-auto">
-					<TableHeader>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead
-											key={header.id}
-											className="sticky top-0 p-2 text-center font-bold uppercase tracking-wider bg-gray-300 border border-gray-400"
-										>
-											{header.isPlaceholder
-												? null
-												: flexRender(
+
+			{/* File Upload Area - Only show if incomplete */}
+			{uploadButton && (
+				<motion.div
+					initial={{ opacity: 0, height: 0 }}
+					animate={{ opacity: 1, height: "auto" }}
+					className="bg-indigo-500/10 border border-indigo-500/20 border-dashed rounded-xl p-6 text-center"
+				>
+					<div className="flex flex-col items-center justify-center space-y-3">
+						<div className="h-12 w-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
+							<UploadCloud className="text-indigo-400 h-6 w-6" />
+						</div>
+						<div>
+							<h3 className="text-lg font-semibold text-white">Upload Class Data</h3>
+							<p className="text-sm text-gray-400">Drag and drop excel file or click to browse</p>
+						</div>
+						<div className="relative group">
+							<Input
+								type="file"
+								className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+								accept=".xlsx, .xls"
+								onChange={handleFileUpload}
+							/>
+							<Button variant="secondary" className="bg-indigo-600 hover:bg-indigo-500 text-white pointer-events-none">
+								Select Excel File
+							</Button>
+						</div>
+					</div>
+				</motion.div>
+			)}
+
+			{/* Data Table */}
+			<div className="rounded-xl border border-white/10 overflow-hidden shadow-2xl bg-gray-950/50 backdrop-blur-sm">
+				<div className="overflow-x-auto">
+					<Table>
+						<TableHeader className="bg-gray-900/80">
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id} className="border-b border-white/5 hover:bg-transparent">
+									{headerGroup.headers.map((header) => {
+										return (
+											<TableHead
+												key={header.id}
+												className="text-center font-bold text-gray-300 uppercase tracking-wider text-xs py-4 h-auto"
+											>
+												{header.isPlaceholder
+													? null
+													: flexRender(
 														header.column.columnDef.header,
 														header.getContext(),
 													)}
-										</TableHead>
-									);
-								})}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row, index) => (
-								<TableRow key={row.id}>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell
-											key={cell.id}
-											className="cursor-pointer border border-gray-300 bg-gray-100 text-center"
-											onClick={() => {
-												setSelectedStudent(data[index]);
-												setshowStudentForm(true);
-											}}
-										>
-											{cell.column.id === "sl_no" ? (
-												index + 1
-											) : cell.column.id === "status" ? (
-												<span
-													className={`${data[index].status === "failed" ? "text-red-700" : "text-green-700"}`}
-												>
-													{data[index].status}
-												</span>
-											) : (
-												flexRender(
-													cell.column.columnDef.cell,
-													cell.getContext(),
-												)
-											)}
-										</TableCell>
-									))}
+											</TableHead>
+										);
+									})}
+									<TableHead className="text-center font-bold text-gray-300 uppercase tracking-wider text-xs py-4 h-auto">Actions</TableHead>
 								</TableRow>
-							))
-						) : (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length}
-									className="h-24 text-center"
-								>
-									No Students.
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
-			</div>
-			<div className="p-3 flex">
-				<span className="text-gray-200">{`Total student data added : ${data.length}/${studentCount[Number(selectedClass)]}`}</span>
-				{data.length === studentCount[Number(selectedClass)] ? (
-					<CheckCircle size={24} className="h-4 w-4 m-1 ml-4" color="green" />
-				) : (
-					<AlertCircle size={24} className="h-4 w-4 m-1 ml-4" color="red" />
-				)}
-			</div>
-			{uploadButton && (
-				<div className="flex mt-1">
-					<Label className="text-white m-2 font-semibold w-[110px]">
-						Upload data
-					</Label>
-					<Input
-						type="file"
-						className="text-sm text-gray-500
-                     file:mr-4 file:py-2 file:px-4
-                     file:rounded-full file:border-0
-                     file:text-sm file:font-semibold
-                     file:bg-gray-100 file:text-gray-900
-                     hover:file:bg-blue-200
-										 border-gray-900
-                     file:cursor-pointer
-										 bg-transparent
-                     "
-						accept=".xlsx, .xls"
-						onChange={handleFileUpload}
-					/>
-				</div>
-			)}
-
-			{showStudentForm && (
-				<div className="fixed inset-0 px-4 bg-gray-500/50 backdrop-blur-sm z-50 flex justify-center items-center">
-					<div className="w-[768px] md:w-[768px] h-[80vh] p-6 overflow-auto p-4 bg-gray-200 rounded-md mt-2">
-						<h2 className="text-center font-bold mb-2">Edit Student Marks</h2>
-						<form onSubmit={editStudentData}>
-							<div className="p-2">
-								<Input
-									className="font-semibold text-sm bg-gray-100"
-									type="text"
-									value={`Class - ${selectedClass}`}
-									disabled
-								/>
-							</div>
-							<div className="p-2">
-								<Label htmlFor="name">Admission no.</Label>
-								<Input
-									type="number"
-									className="bg-gray-100"
-									name="admission_no"
-									defaultValue={selectedStudent?.admission_number}
-								/>
-							</div>
-							<div className="p-2">
-								<Label htmlFor="name">Name</Label>
-								<Input
-									type="text"
-									className="bg-gray-100"
-									defaultValue={selectedStudent?.name}
-									name="name"
-								/>
-							</div>
-							<div className="p-2">
-								<Label htmlFor="question">Attendance</Label>
-								<Input
-									type="number"
-									name="attendance"
-									className="bg-gray-100"
-									defaultValue={selectedStudent?.attendance}
-								/>
-							</div>
-							{subjects.map((subject) => (
-								<div key={subject} className="p-2">
-									<Label htmlFor="question">{subject.toUpperCase()}</Label>
-									<Input
-										name={subject}
-										type="number"
-										className="bg-gray-100"
-										defaultValue={selectedStudent?.[subject as keyof Student]}
-									/>
-								</div>
 							))}
-							<div className="flex justify-end">
-								<Button
-									className="m-4 px-6 py-2"
-									onClick={() => setshowStudentForm(false)}
-								>
-									Cancel
-								</Button>
-								<Button className="m-4 px-6 py-2" type="submit">
-									Update
+						</TableHeader>
+						<TableBody>
+							{table.getRowModel().rows?.length ? (
+								table.getRowModel().rows.map((row, index) => (
+									<TableRow
+										key={row.id}
+										className={`
+											border-b border-white/5 hover:bg-white/5 transition-colors
+											${index % 2 === 0 ? 'bg-white/[0.01]' : 'bg-transparent'}
+										`}
+									>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell
+												key={cell.id}
+												className="text-center text-gray-300 py-3"
+											>
+												{cell.column.id === "sl_no" ? (
+													<span className="text-gray-500 font-mono text-xs">{index + 1}</span>
+												) : cell.column.id === "status" ? (
+													<span
+														className={`
+															inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
+															${row.original.status === "failed"
+																? "bg-red-500/10 text-red-400 border-red-500/20"
+																: "bg-green-500/10 text-green-400 border-green-500/20"}
+														`}
+													>
+														{row.original.status}
+													</span>
+												) : (
+													flexRender(
+														cell.column.columnDef.cell,
+														cell.getContext(),
+													)
+												)}
+											</TableCell>
+										))}
+										<TableCell className="text-center">
+											<Button
+												variant="ghost"
+												size="sm"
+												className="h-8 w-8 p-0 text-gray-400 hover:text-white"
+												onClick={() => {
+													setSelectedStudent(row.original);
+													setshowStudentForm(true);
+												}}
+											>
+												<Pencil className="h-4 w-4" />
+											</Button>
+										</TableCell>
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell
+										colSpan={columns.length + 1}
+										className="h-32 text-center text-gray-500"
+									>
+										No students found.
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
+			</div>
+
+			{/* Edit Modal */}
+			<AnimatePresence>
+				{showStudentForm && (
+					<motion.div
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						className="fixed inset-0 px-4 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center"
+						onClick={() => setshowStudentForm(false)}
+					>
+						<motion.div
+							initial={{ scale: 0.95, opacity: 0, y: 20 }}
+							animate={{ scale: 1, opacity: 1, y: 0 }}
+							exit={{ scale: 0.95, opacity: 0, y: 20 }}
+							onClick={(e) => e.stopPropagation()}
+							className="bg-gray-900 border border-white/10 w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-2xl p-6"
+						>
+							<div className="flex justify-between items-center mb-6 border-b border-white/10 pb-4">
+								<div>
+									<h2 className="text-xl font-bold text-white">Edit Student Records</h2>
+									<p className="text-sm text-gray-400">Class {selectedClass}</p>
+								</div>
+								<Button variant="ghost" size="icon" onClick={() => setshowStudentForm(false)} className="text-gray-400 hover:text-white">
+									<ChevronRightIcon className="h-4 w-4 rotate-45" /> {/* Close icon substitute */}
 								</Button>
 							</div>
-						</form>
-					</div>
-				</div>
-			)}
+
+							<form onSubmit={editStudentData} className="space-y-6">
+								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<Label className="text-gray-400">Name</Label>
+										<Input
+											type="text"
+											className="bg-gray-800/50 border-gray-700 text-white focus:border-indigo-500"
+											defaultValue={selectedStudent?.name}
+											name="name"
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label className="text-gray-400">Admission No.</Label>
+										<Input
+											type="number"
+											className="bg-gray-800/50 border-gray-700 text-white focus:border-indigo-500"
+											name="admission_no"
+											defaultValue={selectedStudent?.admission_number}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label className="text-gray-400">Attendance</Label>
+										<Input
+											type="number"
+											name="attendance"
+											className="bg-gray-800/50 border-gray-700 text-white focus:border-indigo-500"
+											defaultValue={selectedStudent?.attendance}
+										/>
+									</div>
+								</div>
+
+								<div className="space-y-3">
+									<Label className="text-indigo-400 font-semibold uppercase text-xs tracking-wider">Subject Marks</Label>
+									<div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-gray-950/30 p-4 rounded-lg border border-white/5">
+										{subjects.map((subject) => (
+											<div key={subject} className="space-y-1">
+												<Label className="text-gray-500 text-xs uppercase">{subject}</Label>
+												<Input
+													name={subject}
+													type="number"
+													className="bg-gray-800/50 border-gray-700 text-white h-9 focus:border-teal-500 text-center font-mono"
+													defaultValue={selectedStudent?.[subject as keyof Student]}
+												/>
+											</div>
+										))}
+									</div>
+								</div>
+
+								<div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+									<Button
+										variant="ghost"
+										type="button"
+										className="text-gray-400 hover:text-white"
+										onClick={() => setshowStudentForm(false)}
+									>
+										Cancel
+									</Button>
+									<Button
+										type="submit"
+										className="bg-indigo-600 hover:bg-indigo-500 text-white px-8"
+									>
+										Save Changes
+									</Button>
+								</div>
+							</form>
+						</motion.div>
+					</motion.div>
+				)}
+			</AnimatePresence>
 		</div>
 	);
 }
