@@ -12,6 +12,7 @@ import { db } from "./db";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import type { Student } from "@/types";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 async function getStudentDataByID(selectedClass: string, reg: string) {
 	try {
@@ -39,6 +40,7 @@ export async function updateStudent(
 	const docRef = doc(db, selectedClass, studentId);
 	try {
 		await updateDoc(docRef, data);
+		revalidateTag("class-" + selectedClass, {});
 	} catch (error) {
 		console.log("Error updating student data :", error);
 		throw new Error("Error updating student data");
@@ -102,19 +104,30 @@ export async function adminLogin(formData: FormData) {
 	}
 }
 
-export async function getClassData(selectedClass: string) {
-	try {
-		const querySnapshot = await getDocs(collection(db, selectedClass));
-		const dataList = querySnapshot.docs.map((doc) => ({
-			id: doc.id,
-			...doc.data(),
-		}));
-		return dataList;
-	} catch (error) {
-		console.log(" Error fetching data :", error);
-		throw new Error(" Error retrieving class data");
-	}
-}
+export const getClassData = async (selectedClass: string) => {
+	const cachedData = unstable_cache(
+		async () => {
+			console.log(`[CACHE MISS] Fetching class ${selectedClass} from Firestore`);
+			try {
+				const querySnapshot = await getDocs(collection(db, selectedClass));
+				const dataList = querySnapshot.docs.map((doc) => ({
+					id: doc.id,
+					...doc.data(),
+				}));
+				return dataList;
+			} catch (error) {
+				console.log(" Error fetching data :", error);
+				throw new Error(" Error retrieving class data");
+			}
+		},
+		[`class-${selectedClass}`],
+		{
+			tags: [`class-${selectedClass}`],
+		},
+	);
+
+	return cachedData();
+};
 
 export async function addStudentData(
 	selectedClass: string,
@@ -135,6 +148,7 @@ export async function addStudentData(
 			});
 
 			await batch.commit();
+			revalidateTag("class-" + selectedClass, {});
 			return updatedData;
 		}
 
@@ -145,6 +159,7 @@ export async function addStudentData(
 		}
 
 		await batch.commit();
+		revalidateTag("class-" + selectedClass, {});
 		return data;
 	} catch (error) {
 		console.log(" Error fetching data :", error);
@@ -156,3 +171,4 @@ export async function logout() {
 	const cookieStore = await cookies();
 	cookieStore.delete("admin_auth");
 }
+
