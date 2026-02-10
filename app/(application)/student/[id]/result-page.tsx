@@ -186,7 +186,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
 							<div className="glass p-4 rounded-xl border-l-4 border-l-teal-500">
 								<p className="text-xs text-gray-400 mb-1">Student Name</p>
-								<p className="text-lg font-bold text-white uppercase truncate">{studentData.name}</p>
+								<p className="text-lg font-bold text-white uppercase break-words leading-tight">{studentData.name}</p>
 							</div>
 							<div className="glass p-4 rounded-xl border-l-4 border-l-indigo-500">
 								<p className="text-xs text-gray-400 mb-1">Admission No</p>
@@ -237,7 +237,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 						</div>
 
 						{/* Result Footer */}
-						<div className="flex flex-row justify-between items-center gap-4 bg-white/5 rounded-xl p-4 md:p-6 border border-white/10">
+						<div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white/5 rounded-xl p-4 md:p-6 border border-white/10">
 							<div className="flex flex-col items-center md:items-start space-y-1">
 								<span className="text-sm text-gray-400 uppercase tracking-widest">Total Marks</span>
 								<span className="text-4xl font-black text-white">{studentData.total_mark}</span>
