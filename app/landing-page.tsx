@@ -105,6 +105,16 @@ export default function LandingPage() {
 					>
 						<div className="space-y-2 text-center lg:text-left w-full max-w-full px-0 sm:px-2">
 							<motion.div
+								initial={{ opacity: 0, scale: 0.8 }}
+								animate={{ opacity: 1, scale: 1 }}
+								transition={{ duration: 0.5 }}
+								className="mb-8 flex justify-center lg:absolute lg:top-12 lg:left-8 xl:left-16 lg:mb-0 z-20"
+							>
+								<div className="h-28 w-28 md:h-32 md:w-32 lg:h-40 lg:w-40 rounded-full bg-white flex items-center justify-center overflow-hidden border-[3px] border-teal-500/30 shadow-[0_0_25px_rgba(45,212,191,0.2)] relative shrink-0">
+									<Image src="/madrasa-logo.jpeg" alt="Madrasa Logo" fill className="object-contain scale-[1.3]" />
+								</div>
+							</motion.div>
+							<motion.div
 								initial={{ opacity: 0, y: 20 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{ delay: 0.2 }}
@@ -343,7 +353,7 @@ export default function LandingPage() {
 				<div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
 					<div className="text-center mb-16">
-						<h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Why Choose Us?</h2>
+						<h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Our Pillars of Excellence</h2>
 						<p className="text-gray-400 max-w-2xl mx-auto">
 							Committed to providing excellence in both Islamic and modern education.
 						</p>
@@ -393,9 +403,9 @@ export default function LandingPage() {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 					<div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
 						<div className="col-span-1 md:col-span-2 space-y-4">
-							<div className="flex items-center space-x-2 mb-4">
-								<div className="h-10 w-10 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-300 border border-teal-500/30">
-									<School size={20} />
+							<div className="flex items-center space-x-3 mb-4">
+								<div className="h-14 w-14 rounded-full bg-white flex items-center justify-center overflow-hidden border border-teal-500/30 relative shrink-0">
+									<Image src="/madrasa-logo.jpeg" alt="Madrasa Logo" fill className="object-contain scale-[1.4]" />
 								</div>
 								<div>
 									<h3 className="font-bold text-lg text-white">SUBULULHUDA</h3>

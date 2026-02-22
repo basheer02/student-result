@@ -1,5 +1,6 @@
 "use client";
 import { Download, CheckCircle2, XCircle, ArrowLeft, GraduationCap, School } from "lucide-react";
+import Image from "next/image";
 import jsPDF from "jspdf";
 import type { Student } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -165,8 +166,8 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 					{/* Header Section */}
 					<div className="relative p-4 md:p-8 text-center border-b border-white/10 bg-white/5">
 						<div className="flex justify-center mb-4">
-							<div className="h-16 w-16 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-300 border border-teal-500/30 shadow-[0_0_15px_rgba(45,212,191,0.3)]">
-								<School size={32} />
+							<div className="h-24 w-24 rounded-full bg-white flex items-center justify-center overflow-hidden border-2 border-teal-500/30 shadow-[0_0_15px_rgba(45,212,191,0.3)] relative shrink-0">
+								<Image src="/madrasa-logo.jpeg" alt="Madrasa Logo" fill className="object-contain scale-[1.4]" />
 							</div>
 						</div>
 						<h1 className="text-3xl lg:text-4xl text-white font-bold mb-2 arabic-text">
@@ -177,7 +178,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 						</h2>
 						<p className="text-gray-400 mt-2 font-medium">CHENAKKALANGADI, MALAPPURAM</p>
 						<div className="mt-6 inline-flex items-center px-4 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/20 text-teal-300 text-sm font-semibold uppercase tracking-wider">
-							Annual Examination Result 2024-25
+							Annual Examination Result 2025-26
 						</div>
 					</div>
 
