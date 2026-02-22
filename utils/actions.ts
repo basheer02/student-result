@@ -41,6 +41,7 @@ export const getStudentData = async (
 		[`class-${selectedClass}`, `student-${admissionNumber}`],
 		{
 			tags: [`class-${selectedClass}`, `student-${admissionNumber}`],
+			revalidate: 60 * 60 * 24
 		},
 	);
 
@@ -136,6 +137,7 @@ export const getClassData = async (selectedClass: string) => {
 		[`class-${selectedClass}`],
 		{
 			tags: [`class-${selectedClass}`],
+			revalidate: 60 * 60 * 24
 		},
 	);
 
