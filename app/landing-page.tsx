@@ -75,7 +75,6 @@ export default function LandingPage() {
 
 		const formData = new FormData(e.currentTarget);
 		const admNumber = formData.get("admission-number") as string;
-
 		try {
 			await studentLogin(selectedClass, admNumber);
 			toast.success("Result found!", { id: toastId, duration: 2000 });
@@ -256,8 +255,8 @@ export default function LandingPage() {
 															<Input
 																id="admission-number"
 																name="admission-number"
-																type="number"
-																placeholder="Ex: 1234"
+																type="text"
+																placeholder="Ex: 2A1234"
 																required
 																className="bg-gray-800/50 border-gray-700 text-gray-100 h-9 md:h-12 text-sm md:text-base focus:ring-teal-500/50 focus:border-teal-500 transition-all duration-300"
 															/>

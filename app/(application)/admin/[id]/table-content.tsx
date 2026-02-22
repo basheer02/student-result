@@ -74,9 +74,7 @@ export default function TableContent({
 
 	const sortedData = useMemo(() => {
 		return [...data].sort((a, b) => {
-			if (a.status === "failed") return 1;
-			if (b.status === "failed") return -1;
-			return a.rank - b.rank;
+			return a.roll_no - b.roll_no;
 		});
 	}, [data]);
 
@@ -103,7 +101,8 @@ export default function TableContent({
 
 		const formData = new FormData(e.currentTarget);
 		const updatedData: Partial<Student> = {
-			admission_number: Number(formData.get("admission_no")),
+			roll_no: Number(formData.get("roll_no")),
+			admission_number: formData.get("admission_no") as string,
 			attendance: Number(formData.get("attendance")),
 			name: formData.get("name") as string,
 			...Object.fromEntries(
@@ -256,6 +255,7 @@ export default function TableContent({
 				const sheet = workbook.Sheets[sheetName];
 
 				const newHeaders = [
+					"roll_no",
 					"admission_number",
 					"name",
 					"attendance",
@@ -476,9 +476,7 @@ export default function TableContent({
 												key={cell.id}
 												className="text-center text-gray-300 py-3"
 											>
-												{cell.column.id === "sl_no" ? (
-													<span className="text-gray-500 font-mono text-xs">{index + 1}</span>
-												) : cell.column.id === "status" ? (
+												{cell.column.id === "status" ? (
 													<span
 														className={`
 															inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
@@ -568,10 +566,19 @@ export default function TableContent({
 									<div className="space-y-2">
 										<Label className="text-gray-400">Admission No.</Label>
 										<Input
-											type="number"
+											type="text"
 											className="bg-gray-800/50 border-gray-700 text-white focus:border-indigo-500"
 											name="admission_no"
 											defaultValue={selectedStudent?.admission_number}
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label className="text-gray-400">Roll No.</Label>
+										<Input
+											type="number"
+											name="roll_no"
+											className="bg-gray-800/50 border-gray-700 text-white focus:border-indigo-500"
+											defaultValue={selectedStudent?.roll_no}
 										/>
 									</div>
 									<div className="space-y-2">

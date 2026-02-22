@@ -20,8 +20,8 @@ export default async function Page({
 
 		const staticColumns: ColumnDef<Student>[] = [
 			{
-				accessorKey: "sl_no",
-				header: "No.",
+				accessorKey: "roll_no",
+				header: "Roll No.",
 			},
 			{
 				accessorKey: "admission_number",

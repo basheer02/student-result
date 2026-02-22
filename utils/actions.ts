@@ -18,12 +18,13 @@ export const getStudentData = async (
 	selectedClass: string,
 	admissionNumber: string,
 ) => {
+	console.log("admission Number :", admissionNumber.toUpperCase());
 	const cachedData = unstable_cache(
 		async () => {
 			try {
 				const q = query(
 					collection(db, selectedClass),
-					where("admission_number", "==", Number(admissionNumber)),
+					where("admission_number", "==", admissionNumber.toUpperCase()),
 				);
 				const snapDoc = await getDocs(q);
 				if (snapDoc.empty) return null;
