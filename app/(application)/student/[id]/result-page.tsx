@@ -56,7 +56,10 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 		const pageWidth = doc.internal.pageSize.getWidth();
 		const marginLeft = (pageWidth - 140) / 2;
 
+		let startY = 50;
+
 		autoTable(doc, {
+			startY,
 			body: studentDetails,
 			theme: "grid",
 			styles: { halign: "center", fontSize: 12 },
@@ -68,7 +71,7 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			margin: { left: marginLeft, right: marginLeft },
 		});
 
-		let startY = 85;
+		startY = 85;
 
 		// Subjects and marks
 		const subjectRows = subjects.map((subject) => [
@@ -94,6 +97,10 @@ export default function ResultPage({ studentData }: { studentData: Student }) {
 			["TOTAL MARK", studentData.total_mark],
 			["STATUS", studentData.status],
 		];
+
+		if (studentData.rank) {
+			totalMark.push(["RANK", studentData.rank]);
+		}
 
 		if (subjects.length === 2) {
 			startY = 113;

@@ -32,7 +32,8 @@ import {
 	MoreVertical,
 	UploadCloud,
 	Pencil,
-	Search
+	Search,
+	Trophy
 } from "lucide-react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -85,6 +86,31 @@ export default function TableContent({
 			student.admission_number.toString().includes(searchTerm)
 		);
 	}, [sortedData, searchTerm]);
+
+	const toppersByDiv = useMemo(() => {
+		const getDiv = (adminNo: string | number) => {
+			const str = String(adminNo);
+			return str.length > 4 ? str.charAt(1).toUpperCase() : 'DEFAULT';
+		};
+
+		const passedStudents = data.filter(s => s.status === "passed");
+
+		const byDiv: Record<string, Student[]> = {};
+		for (const student of passedStudents) {
+			const div = getDiv(student.admission_number);
+			if (!byDiv[div]) byDiv[div] = [];
+			byDiv[div].push(student);
+		}
+
+		const toppers: Record<string, Student[]> = {};
+		for (const div in byDiv) {
+			toppers[div] = byDiv[div]
+				.filter(s => s.rank && s.rank <= 3)
+				.sort((a, b) => (a.rank || 0) - (b.rank || 0));
+		}
+
+		return Object.fromEntries(Object.entries(toppers).sort(([a], [b]) => a.localeCompare(b)));
+	}, [data]);
 
 	const table = useReactTable({
 		data: filteredData,
@@ -192,24 +218,42 @@ export default function TableContent({
 			(student: { status: string }) => student.status === "failed",
 		);
 
-		passedStudents.sort((a, b) => b.total_mark - a.total_mark);
+		const getDiv = (adminNo: string | number) => {
+			const str = String(adminNo);
+			return str.length > 4 ? str.charAt(1).toUpperCase() : 'DEFAULT';
+		};
 
-		let currentRank = 1;
+		const studentsByDiv: Record<string, Student[]> = {};
+		for (const student of passedStudents) {
+			const div = getDiv(student.admission_number);
+			if (!studentsByDiv[div]) {
+				studentsByDiv[div] = [];
+			}
+			studentsByDiv[div].push(student);
+		}
 
-		for (let i = 0; i < passedStudents.length; i++) {
-			const student = passedStudents[i];
+		const rankedPassedStudents: Student[] = [];
 
-			if (i > 0 && student.total_mark === passedStudents[i - 1].total_mark) {
-				student.rank = passedStudents[i - 1].rank;
-			} else {
-				student.rank = currentRank;
-				currentRank++;
+		for (const div in studentsByDiv) {
+			const divStudents = studentsByDiv[div];
+			divStudents.sort((a, b) => b.total_mark - a.total_mark);
+
+			let currentRank = 1;
+			for (let i = 0; i < divStudents.length; i++) {
+				const student = divStudents[i];
+				if (i > 0 && student.total_mark === divStudents[i - 1].total_mark) {
+					student.rank = divStudents[i - 1].rank;
+				} else {
+					student.rank = currentRank;
+					currentRank++;
+				}
+				rankedPassedStudents.push(student);
 			}
 		}
 
 		try {
 			if (addOrUpdate === "add") {
-				const formattedStudentData = [...passedStudents, ...failedStudents];
+				const formattedStudentData = [...rankedPassedStudents, ...failedStudents];
 				const res = await addStudentData(
 					`class-${selectedClass}`,
 					JSON.parse(JSON.stringify(formattedStudentData)),
@@ -226,10 +270,10 @@ export default function TableContent({
 			}
 			await addStudentData(
 				`class-${selectedClass}`,
-				JSON.parse(JSON.stringify(passedStudents)),
+				JSON.parse(JSON.stringify(rankedPassedStudents)),
 				addOrUpdate,
 			);
-			setData([...passedStudents, ...failedStudents]);
+			setData([...rankedPassedStudents, ...failedStudents]);
 			return true;
 		} catch (error) {
 			console.log(error);
@@ -395,7 +439,7 @@ export default function TableContent({
 							<DropdownMenuLabel>Actions</DropdownMenuLabel>
 							<DropdownMenuSeparator className="bg-gray-800" />
 							<DropdownMenuItem onClick={generatePDF} className="hover:bg-gray-800 cursor-pointer">
-								<Download className="mr-2 h-4 w-4" /> Download Report
+								<Download className="mr-2 h-4 w-4" /> Download Student List
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={signOut} className="hover:bg-red-900/20 text-red-400 cursor-pointer">
 								<LogOut className="mr-2 h-4 w-4" /> Sign Out
@@ -433,6 +477,52 @@ export default function TableContent({
 						</div>
 					</div>
 				</motion.div>
+			)}
+
+			{/* Class Toppers Area */}
+			{Object.keys(toppersByDiv).length > 0 && (
+				<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+					{Object.entries(toppersByDiv).map(([div, toppers]) => (
+						toppers.length > 0 && (
+							<motion.div
+								key={div}
+								initial={{ opacity: 0, y: 20 }}
+								animate={{ opacity: 1, y: 0 }}
+								className="bg-gray-900/40 backdrop-blur-md border border-amber-500/20 rounded-xl overflow-hidden shadow-lg"
+							>
+								<div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 p-4 border-b border-amber-500/20">
+									<h3 className="text-lg font-bold text-amber-400 flex items-center">
+										<Trophy className="w-5 h-5 mr-2" />
+										{div === 'DEFAULT' ? 'Class Toppers' : `Division ${div} Toppers`}
+									</h3>
+								</div>
+								<div className="p-4 space-y-3">
+									{toppers.map(student => (
+										<div key={student.id} className="flex items-center justify-between bg-gray-950/50 p-3 rounded-lg border border-white/5">
+											<div className="flex items-center gap-3">
+												<div className={`
+													flex items-center justify-center w-8 h-8 rounded-full font-bold
+													${student.rank === 1 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
+														student.rank === 2 ? 'bg-gray-400/20 text-gray-300 border border-gray-400/30' :
+															'bg-orange-700/20 text-orange-400 border border-orange-700/30'}
+												`}>
+													#{student.rank}
+												</div>
+												<div>
+													<p className="text-white font-medium text-sm">{student.name}</p>
+													<p className="text-gray-400 text-xs">Adm no. : {student.admission_number} | Roll : {student.roll_no} | Att : {student.attendance}</p>
+												</div>
+											</div>
+											<div className="text-right">
+												<p className="text-teal-400 font-bold">{student.total_mark}</p>
+											</div>
+										</div>
+									))}
+								</div>
+							</motion.div>
+						)
+					))}
+				</div>
 			)}
 
 			{/* Data Table */}
