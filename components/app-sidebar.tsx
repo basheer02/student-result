@@ -102,7 +102,7 @@ export function AppSidebar() {
 				<SidebarMenu>
 					<SidebarMenuItem>
 						<SidebarMenuButton size="lg" asChild className="hover:bg-white/5 data-[state=open]:bg-white/5 data-[state=open]:text-white">
-							<Link href="/admin" onClick={() => setOpenMobile(false)}>
+							<Link href="/admin" onClick={() => setOpenMobile(false)} prefetch={false}>
 								<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-teal-500/20 text-teal-400">
 									<ChartBar className="size-4" />
 								</div>
@@ -137,6 +137,7 @@ export function AppSidebar() {
 										href="/admin"
 										className="flex items-center gap-3 p-2 font-medium"
 										onClick={() => setOpenMobile(false)}
+										prefetch={false}
 									>
 										<HomeIcon className={pathname === "/admin" ? "text-teal-400" : ""} />
 										<span>Dashboard</span>
@@ -176,6 +177,7 @@ export function AppSidebar() {
 												href={item.url}
 												className="flex items-center gap-3 p-2"
 												onClick={() => setOpenMobile(false)}
+												prefetch={false}
 											>
 												{isActive && (
 													<motion.div

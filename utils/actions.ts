@@ -38,9 +38,9 @@ export const getStudentData = async (
 				throw new Error(" Error retrieving student data");
 			}
 		},
-		[`class-${selectedClass}`, `student-${admissionNumber}`],
+		[`studentData-${selectedClass}`, `student-${admissionNumber}`],
 		{
-			tags: [`class-${selectedClass}`, `student-${admissionNumber}`],
+			tags: [selectedClass, `student-${admissionNumber}`],
 			revalidate: 60 * 60 * 24
 		},
 	);
@@ -56,7 +56,7 @@ export async function updateStudent(
 	const docRef = doc(db, selectedClass, studentId);
 	try {
 		await updateDoc(docRef, data);
-		revalidateTag("class-" + selectedClass, {});
+		revalidateTag(selectedClass, {});
 	} catch (error) {
 		console.log("Error updating student data :", error);
 		throw new Error("Error updating student data");
@@ -134,9 +134,9 @@ export const getClassData = async (selectedClass: string) => {
 				throw new Error(" Error retrieving class data");
 			}
 		},
-		[`class-${selectedClass}`],
+		[`classData-${selectedClass}`],
 		{
-			tags: [`class-${selectedClass}`],
+			tags: [selectedClass],
 			revalidate: 60 * 60 * 24
 		},
 	);
@@ -163,7 +163,7 @@ export async function addStudentData(
 			});
 
 			await batch.commit();
-			revalidateTag("class-" + selectedClass, {});
+			revalidateTag(selectedClass, {});
 			return updatedData;
 		}
 
@@ -174,7 +174,7 @@ export async function addStudentData(
 		}
 
 		await batch.commit();
-		revalidateTag("class-" + selectedClass, {});
+		revalidateTag(selectedClass, {});
 		return data;
 	} catch (error) {
 		console.log(" Error fetching data :", error);

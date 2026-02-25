@@ -6,7 +6,7 @@ export async function GET(request: Request) {
     const tag = searchParams.get("tag");
     const path = searchParams.get("path");
 
-    // e.g. /api/revalidate?tag=class-class-6
+    // e.g. /api/revalidate?tag=class-6
     if (tag) {
         revalidateTag(tag, {});
         return NextResponse.json({ revalidated: true, now: Date.now(), type: "tag", id: tag });
