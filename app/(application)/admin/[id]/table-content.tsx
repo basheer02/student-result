@@ -112,6 +112,31 @@ export default function TableContent({
 		return Object.fromEntries(Object.entries(toppers).sort(([a], [b]) => a.localeCompare(b)));
 	}, [data]);
 
+	const statsByDiv = useMemo(() => {
+		const getDiv = (adminNo: string | number) => {
+			const str = String(adminNo);
+			return str.length > 4 ? str.charAt(1).toUpperCase() : 'DEFAULT';
+		};
+
+		const stats: Record<string, { total: number; passed: number; percent: string }> = {};
+
+		for (const student of data) {
+			const div = getDiv(student.admission_number);
+			if (!stats[div]) stats[div] = { total: 0, passed: 0, percent: "0" };
+			stats[div].total++;
+			if (student.status === "passed") {
+				stats[div].passed++;
+			}
+		}
+
+		for (const div in stats) {
+			const num = (stats[div].passed / stats[div].total) * 100;
+			stats[div].percent = Number.isInteger(num) ? num.toString() : num.toFixed(2);
+		}
+
+		return stats;
+	}, [data]);
+
 	const table = useReactTable({
 		data: filteredData,
 		columns,
@@ -490,11 +515,16 @@ export default function TableContent({
 								animate={{ opacity: 1, y: 0 }}
 								className="bg-gray-900/40 backdrop-blur-md border border-amber-500/20 rounded-xl overflow-hidden shadow-lg"
 							>
-								<div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 p-4 border-b border-amber-500/20">
+								<div className="flex justify-between items-center bg-gradient-to-r from-amber-500/20 to-orange-500/20 p-4 border-b border-amber-500/20">
 									<h3 className="text-lg font-bold text-amber-400 flex items-center">
 										<Trophy className="w-5 h-5 mr-2" />
 										{div === 'DEFAULT' ? 'Class Toppers' : `Division ${div} Toppers`}
 									</h3>
+									{statsByDiv[div] && (
+										<span className="text-sm font-semibold text-teal-400 bg-teal-500/10 px-3 py-1 rounded-full border border-teal-500/20">
+											Pass % : {statsByDiv[div].percent}% | {statsByDiv[div].passed}/{statsByDiv[div].total}
+										</span>
+									)}
 								</div>
 								<div className="p-4 space-y-3">
 									{toppers.map(student => (

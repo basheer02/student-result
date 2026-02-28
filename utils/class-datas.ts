@@ -16,7 +16,6 @@ export const classSubjects: Record<number, string[]> = {
 		"lis_quran",
 		"dur_ihsan",
 		"tariq",
-		"tajvid",
 	],
 	4: [
 		"quran",
@@ -26,7 +25,6 @@ export const classSubjects: Record<number, string[]> = {
 		"lis_quran",
 		"dur_ihsan",
 		"tariq",
-		"tajvid",
 	],
 	5: [
 		"quran",
