@@ -90,7 +90,8 @@ export default function TableContent({
 	const toppersByDiv = useMemo(() => {
 		const getDiv = (adminNo: string | number) => {
 			const str = String(adminNo);
-			return str.length > 4 ? str.charAt(1).toUpperCase() : 'DEFAULT';
+			const isHighClass = Number(selectedClass) > 9;
+			return str.length > 4 ? (isHighClass ? str.charAt(2) : str.charAt(1)).toUpperCase() : 'DEFAULT';
 		};
 
 		const passedStudents = data.filter(s => s.status === "passed");
@@ -110,12 +111,13 @@ export default function TableContent({
 		}
 
 		return Object.fromEntries(Object.entries(toppers).sort(([a], [b]) => a.localeCompare(b)));
-	}, [data]);
+	}, [data, selectedClass]);
 
 	const statsByDiv = useMemo(() => {
 		const getDiv = (adminNo: string | number) => {
 			const str = String(adminNo);
-			return str.length > 4 ? str.charAt(1).toUpperCase() : 'DEFAULT';
+			const isHighClass = Number(selectedClass) > 9;
+			return str.length > 4 ? (isHighClass ? str.charAt(2) : str.charAt(1)).toUpperCase() : 'DEFAULT';
 		};
 
 		const stats: Record<string, { total: number; passed: number; percent: string }> = {};
@@ -135,7 +137,7 @@ export default function TableContent({
 		}
 
 		return stats;
-	}, [data]);
+	}, [data, selectedClass]);
 
 	const table = useReactTable({
 		data: filteredData,
@@ -245,7 +247,8 @@ export default function TableContent({
 
 		const getDiv = (adminNo: string | number) => {
 			const str = String(adminNo);
-			return str.length > 4 ? str.charAt(1).toUpperCase() : 'DEFAULT';
+			const isHighClass = Number(selectedClass) > 9;
+			return str.length > 4 ? (isHighClass ? str.charAt(2) : str.charAt(1)).toUpperCase() : 'DEFAULT';
 		};
 
 		const studentsByDiv: Record<string, Student[]> = {};

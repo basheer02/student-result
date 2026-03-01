@@ -108,10 +108,10 @@ export default function LandingPage() {
 								initial={{ opacity: 0, scale: 0.8 }}
 								animate={{ opacity: 1, scale: 1 }}
 								transition={{ duration: 0.5 }}
-								className="mb-8 flex justify-center lg:absolute lg:top-12 lg:left-8 xl:left-16 lg:mb-0 z-20"
+								className="mb-8 flex justify-center lg:justify-start w-full z-20"
 							>
-								<div className="h-28 w-28 md:h-32 md:w-32 lg:h-40 lg:w-40 rounded-full bg-white flex items-center justify-center overflow-hidden border-[3px] border-teal-500/30 shadow-[0_0_25px_rgba(45,212,191,0.2)] relative shrink-0">
-									<Image src="/madrasa-logo.jpeg" alt="Madrasa Logo" fill className="object-contain scale-[1.3]" />
+								<div className="h-28 w-28 md:h-32 md:w-32 lg:h-36 lg:w-36 rounded-full bg-white flex items-center justify-center overflow-hidden border-[3px] border-teal-500/30 shadow-[0_0_25px_rgba(45,212,191,0.2)] relative shrink-0">
+									<Image src="/madrasa-logo.jpeg" alt="Madrasa Logo" fill className="object-contain scale-[1.3]" priority />
 								</div>
 							</motion.div>
 							<motion.div

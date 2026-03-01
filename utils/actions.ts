@@ -90,10 +90,8 @@ export async function studentLogin(
 		throw new Error("Error retrieving student data");
 	}
 
-	if (studentData !== null) {
-		if ((await cookies()).get("student_data")) {
-			redirect(`/student/${studentData.id}`);
-		}
+	if (studentData) {
+		redirect(`/student/${studentData.id}`);
 	}
 }
 
