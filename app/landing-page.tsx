@@ -8,9 +8,6 @@ import { useEffect, useState } from "react";
 
 import Img1 from "../public/1.jpeg";
 import Img2 from "../public/2.jpeg";
-import Img3 from "../public/3.jpeg";
-import Img4 from "../public/4.jpeg";
-import Img5 from "../public/5.jpeg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -29,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Sparkles, GraduationCap, ShieldCheck, BookOpen, Users, Trophy, School, MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
 
-const Images = [Img1, Img2, Img3, Img4, Img5];
+const Images = [Img1, Img2];
 
 export default function LandingPage() {
 	const [activeTab, setActiveTab] = useState<"student" | "admin">("student");
