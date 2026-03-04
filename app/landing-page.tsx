@@ -40,7 +40,7 @@ export default function LandingPage() {
 	const [resultPublished, setResultPublished] = useState(true);
 
 	useEffect(() => {
-		const targetDateIST = new Date("2025-03-17T02:00:00Z");
+		const targetDateIST = new Date("2026-03-05T02:00:00Z");
 		const now = new Date();
 		setResultPublished(now >= targetDateIST);
 	}, []);
@@ -138,6 +138,7 @@ export default function LandingPage() {
 							<Swiper
 								modules={[Autoplay, EffectFade]}
 								effect="fade"
+								fadeEffect={{ crossFade: true }}
 								autoplay={{ delay: 3500, disableOnInteraction: false }}
 								loop
 								speed={1000}
@@ -226,7 +227,7 @@ export default function LandingPage() {
 													<div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-center">
 														<p className="text-red-400 font-semibold mb-1">Results Not Published Yet</p>
 														<p className="text-xs text-red-300/80">
-															Publishing on March 17, 7:30 AM
+															Results will be published on March 5, 7:30 AM IST
 														</p>
 													</div>
 												) : (
