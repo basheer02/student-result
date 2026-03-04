@@ -149,7 +149,7 @@ export async function adminLogin(formData: FormData) {
 	const username = formData.get("username") as string;
 	const password = formData.get("password") as string;
 
-	const credentials = username === "admin" && password === "subululhuda";
+	const credentials = username === "admin" && password === "subululhuda@02";
 
 	if (credentials) {
 		const cookieStore = await cookies();
