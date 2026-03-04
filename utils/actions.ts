@@ -14,38 +14,88 @@ import { cookies } from "next/headers";
 import type { Student } from "@/types";
 import { revalidateTag, unstable_cache } from "next/cache";
 
+// ─── Module-level cache factories ────────────────────────────────────────────
+// IMPORTANT: unstable_cache must be defined at module level (not inside async
+// functions). Defining it inside a function creates a new function reference on
+// every call, which defeats Next.js caching entirely — causing cache misses even
+// when data exists, or silently returning nothing instead of hitting Firestore.
+
+const studentDataCacheMap = new Map<
+	string,
+	() => Promise<Student | null>
+>();
+
+const getStudentDataCached = (
+	selectedClass: string,
+	admissionNumber: string,
+): (() => Promise<Student | null>) => {
+	const cacheKey = `${selectedClass}::${admissionNumber.toUpperCase()}`;
+	if (!studentDataCacheMap.has(cacheKey)) {
+		studentDataCacheMap.set(
+			cacheKey,
+			unstable_cache(
+				async () => {
+					console.log(
+						`[CACHE MISS] Fetching student ${admissionNumber.toUpperCase()} from Firestore`,
+					);
+					const q = query(
+						collection(db, selectedClass),
+						where(
+							"admission_number",
+							"==",
+							admissionNumber.toUpperCase(),
+						),
+					);
+					const snapDoc = await getDocs(q);
+					if (snapDoc.empty) return null;
+					return {
+						id: snapDoc.docs[0].id,
+						...snapDoc.docs[0].data(),
+					} as Student;
+				},
+				[
+					`studentData-${selectedClass}`,
+					`student-${admissionNumber.toUpperCase()}`,
+				],
+				{
+					tags: [selectedClass, `student-${admissionNumber.toUpperCase()}`],
+					revalidate: 60 * 60 * 24,
+				},
+			),
+		);
+	}
+	return studentDataCacheMap.get(cacheKey)!;
+};
+
 export const getStudentData = async (
 	selectedClass: string,
 	admissionNumber: string,
-) => {
-	console.log("admission Number :", admissionNumber.toUpperCase());
-	const cachedData = unstable_cache(
-		async () => {
-			try {
-				const q = query(
-					collection(db, selectedClass),
-					where("admission_number", "==", admissionNumber.toUpperCase()),
-				);
-				const snapDoc = await getDocs(q);
-				if (snapDoc.empty) return null;
+): Promise<Student | null> => {
+	try {
+		const cached = await getStudentDataCached(selectedClass, admissionNumber)();
 
-				return {
-					id: snapDoc.docs[0].id,
-					...snapDoc.docs[0].data(),
-				} as Student;
-			} catch (error) {
-				console.log(" Error fetching data :", error);
-				throw new Error(" Error retrieving student data");
-			}
-		},
-		[`studentData-${selectedClass}`, `student-${admissionNumber}`],
-		{
-			tags: [selectedClass, `student-${admissionNumber}`],
-			revalidate: 60 * 60 * 24
-		},
-	);
+		// Fallback: if cache returns undefined/null unexpectedly, hit Firestore directly
+		if (cached === undefined) {
+			console.log(
+				`[CACHE UNDEFINED] Falling back to direct Firestore fetch for ${admissionNumber.toUpperCase()}`,
+			);
+			const q = query(
+				collection(db, selectedClass),
+				where("admission_number", "==", admissionNumber.toUpperCase()),
+			);
+			const snapDoc = await getDocs(q);
+			if (snapDoc.empty) return null;
+			return {
+				id: snapDoc.docs[0].id,
+				...snapDoc.docs[0].data(),
+			} as Student;
+		}
 
-	return cachedData();
+		return cached;
+	} catch (error) {
+		console.log("Error fetching student data:", error);
+		throw new Error("Error retrieving student data");
+	}
 };
 
 export async function updateStudent(
@@ -116,30 +166,55 @@ export async function adminLogin(formData: FormData) {
 	}
 }
 
-export const getClassData = async (selectedClass: string) => {
-	const cachedData = unstable_cache(
-		async () => {
-			console.log(`[CACHE MISS] Fetching class ${selectedClass} from Firestore`);
-			try {
-				const querySnapshot = await getDocs(collection(db, selectedClass));
-				const dataList = querySnapshot.docs.map((doc) => ({
-					id: doc.id,
-					...doc.data(),
-				}));
-				return dataList;
-			} catch (error) {
-				console.log(" Error fetching data :", error);
-				throw new Error(" Error retrieving class data");
-			}
-		},
-		[`classData-${selectedClass}`],
-		{
-			tags: [selectedClass],
-			revalidate: 60 * 60 * 24
-		},
-	);
+const classDataCacheMap = new Map<string, () => Promise<Student[]>>();
 
-	return cachedData();
+const getClassDataCached = (selectedClass: string): (() => Promise<Student[]>) => {
+	if (!classDataCacheMap.has(selectedClass)) {
+		classDataCacheMap.set(
+			selectedClass,
+			unstable_cache(
+				async () => {
+					console.log(
+						`[CACHE MISS] Fetching class ${selectedClass} from Firestore`,
+					);
+					const querySnapshot = await getDocs(collection(db, selectedClass));
+					return querySnapshot.docs.map((doc) => ({
+						id: doc.id,
+						...doc.data(),
+					})) as Student[];
+				},
+				[`classData-${selectedClass}`],
+				{
+					tags: [selectedClass],
+					revalidate: 60 * 60 * 24,
+				},
+			),
+		);
+	}
+	return classDataCacheMap.get(selectedClass)!;
+};
+
+export const getClassData = async (selectedClass: string): Promise<Student[]> => {
+	try {
+		const cached = await getClassDataCached(selectedClass)();
+
+		// Fallback: if cache returns undefined (e.g. corrupted entry), hit Firestore directly
+		if (cached === undefined) {
+			console.log(
+				`[CACHE UNDEFINED] Falling back to direct Firestore fetch for ${selectedClass}`,
+			);
+			const querySnapshot = await getDocs(collection(db, selectedClass));
+			return querySnapshot.docs.map((doc) => ({
+				id: doc.id,
+				...doc.data(),
+			})) as Student[];
+		}
+
+		return cached;
+	} catch (error) {
+		console.log(" Error fetching data :", error);
+		throw new Error(" Error retrieving class data");
+	}
 };
 
 export async function addStudentData(
