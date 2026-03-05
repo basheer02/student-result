@@ -8,6 +8,14 @@ import { useEffect, useState } from "react";
 
 import Img1 from "../public/1.jpeg";
 import Img2 from "../public/2.jpeg";
+import Img3 from "../public/class-1.jpeg";
+import Img4 from "../public/class-11.jpeg";
+import Img5 from "../public/class-2.jpeg";
+import Img6 from "../public/class-3.jpeg";
+import Img7 from "../public/class-4.jpeg";
+import Img8 from "../public/class-6.jpeg";
+import Img9 from "../public/class-8.jpeg";
+import Img10 from "../public/class-9.jpeg";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
@@ -26,7 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Sparkles, GraduationCap, ShieldCheck, BookOpen, Users, Trophy, School, MapPin, Phone, Mail, Facebook, Twitter, Instagram } from "lucide-react";
 
-const Images = [Img1, Img2];
+const Images = [Img1, Img2, Img3, Img4, Img5, Img6, Img7, Img8, Img9, Img10];
 
 export default function LandingPage() {
 	const [activeTab, setActiveTab] = useState<"student" | "admin">("student");
@@ -345,86 +353,6 @@ export default function LandingPage() {
 					</motion.div>
 				</div>
 			</div>
-
-			{/* Class Toppers Section */}
-			<section className="py-24 relative overflow-hidden">
-				<div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-					<div className="text-center mb-16">
-						<motion.div
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							className="inline-flex items-center px-3 py-1 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-300 text-sm font-medium mb-4"
-						>
-							<Trophy size={14} className="mr-2" />
-							Hall of Fame
-						</motion.div>
-						<motion.h2
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ delay: 0.1 }}
-							className="text-3xl md:text-4xl font-bold text-white mb-4"
-						>
-							Class Toppers
-						</motion.h2>
-						<motion.p
-							initial={{ opacity: 0, y: 20 }}
-							whileInView={{ opacity: 1, y: 0 }}
-							viewport={{ once: true }}
-							transition={{ delay: 0.2 }}
-							className="text-gray-400 max-w-2xl mx-auto"
-						>
-							Celebrating the outstanding achievers of Annual Examination 2025-26.
-						</motion.p>
-					</div>
-
-					<motion.div
-						initial={{ opacity: 0, y: 30 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true }}
-						transition={{ delay: 0.3 }}
-					>
-						<Swiper
-							modules={[Autoplay]}
-							spaceBetween={16}
-							slidesPerView={1}
-							breakpoints={{
-								640: { slidesPerView: 2 },
-							}}
-							autoplay={{ delay: 2500, disableOnInteraction: false }}
-							loop
-							speed={800}
-						>
-							{[
-								{ src: "/class-1.jpeg", label: "Class 1" },
-								{ src: "/class-2.jpeg", label: "Class 2" },
-								{ src: "/class-3.jpeg", label: "Class 3" },
-								{ src: "/class-4.jpeg", label: "Class 4" },
-								{ src: "/class-6.jpeg", label: "Class 6" },
-								{ src: "/class-8.jpeg", label: "Class 8" },
-								{ src: "/class-9.jpeg", label: "Class 9" },
-								{ src: "/class-11.jpeg", label: "Class 11" },
-							].map((item, index) => (
-								<SwiperSlide key={index}>
-									<div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-black/50 group">
-										<div className="relative aspect-video w-full">
-											<Image
-												src={item.src}
-												alt={`${item.label} Toppers`}
-												fill
-												className="object-cover transition-transform duration-500 group-hover:scale-105"
-											/>
-											<div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-										</div>
-									</div>
-								</SwiperSlide>
-							))}
-						</Swiper>
-					</motion.div>
-				</div>
-			</section>
 
 			{/* Features Section */}
 			<section className="py-24 bg-black/40 relative">

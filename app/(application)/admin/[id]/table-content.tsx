@@ -378,6 +378,87 @@ export default function TableContent({
 		}
 	};
 
+	const downloadPDF = () => {
+		if (data.length === 0) {
+			toast.error("No data to download!");
+			return;
+		}
+
+		const getDiv = (adminNo: string | number) => {
+			const str = String(adminNo);
+			const isHighClass = Number(selectedClass) > 9;
+			return str.length > 4 ? (isHighClass ? str.charAt(2) : str.charAt(1)).toUpperCase() : 'DEFAULT';
+		};
+
+		// Group students by division
+		const byDiv: Record<string, Student[]> = {};
+		for (const student of data) {
+			const div = getDiv(student.admission_number);
+			if (!byDiv[div]) byDiv[div] = [];
+			byDiv[div].push(student);
+		}
+
+		const toastId = toast.loading(`Downloading ${Object.keys(byDiv).length} PDF(s)...`);
+
+		// Build two parallel arrays:
+		//   dataKeys – actual Student property names used to read values
+		//   headers  – friendly display names shown in the PDF header row
+		const dataKeys: string[] = ["admission_number", "name", "attendance", ...subjects, "total_mark", "status", "rank"];
+		const headers: string[] = ["adm", "name", "hajar", ...subjects, "total", "status", "rank"];
+
+		// Rename lis_quran display header
+		const lisIdx = dataKeys.indexOf("lis_quran");
+		if (lisIdx !== -1) headers[lisIdx] = "lisan";
+
+		// Rename subject display headers for class 1
+		if (selectedClass === "1") {
+			const subjectStart = 3; // index after adm, name, hajar
+			headers[subjectStart + 0] = "thafhim(R)";
+			headers[subjectStart + 1] = "thafhim(W)";
+			headers[subjectStart + 2] = "duroos(R)";
+			headers[subjectStart + 3] = "duroos(W)";
+			headers[subjectStart + 5] = "listen";
+		}
+
+		// Generate and save one PDF per division
+		for (const [div, students] of Object.entries(byDiv).sort(([a], [b]) => a.localeCompare(b))) {
+			// Landscape so all columns fit on one page
+			const doc = new jsPDF({ orientation: "landscape" });
+
+			const rows = students
+				.sort((a, b) => a.roll_no - b.roll_no)
+				.map((obj, index) => [
+					index + 1,
+					// Read values using original dataKeys — never the renamed display headers
+					...dataKeys.map((key) => String(obj[key as keyof Student] ?? "")),
+				]);
+
+			const divLabel = div === 'DEFAULT' ? `Class-${selectedClass}` : `Class-${selectedClass} Division ${div}`;
+
+			doc.setFontSize(12);
+			doc.text(` ${divLabel}`, 12, 10, { align: "left" });
+			doc.text(` Total students : ${students.length}`, 12, 16, { align: "left" });
+
+			autoTable(doc, {
+				head: [["no", ...headers]],
+				body: rows,
+				margin: { top: 22, left: 6, right: 6 },
+				styles: { cellPadding: 2, fontSize: 7.5, halign: "center" },
+				columnStyles: { 2: { halign: "left" } }, // name column left-aligned
+				tableWidth: "auto",
+				showHead: "everyPage",
+				theme: "grid",
+			});
+
+			const fileName = div === 'DEFAULT'
+				? `Class_${selectedClass}_data.pdf`
+				: `Class_${selectedClass}_Div_${div}_data.pdf`;
+			doc.save(fileName);
+		}
+
+		toast.success("Download successful!", { id: toastId, duration: 2000 });
+	};
+
 	const generatePDF = () => {
 		const toastId = toast.loading("Generating class report...");
 		const doc = new jsPDF();
@@ -468,6 +549,9 @@ export default function TableContent({
 							<DropdownMenuSeparator className="bg-gray-800" />
 							<DropdownMenuItem onClick={generatePDF} className="hover:bg-gray-800 cursor-pointer">
 								<Download className="mr-2 h-4 w-4" /> Download Student List
+							</DropdownMenuItem>
+							<DropdownMenuItem onClick={downloadPDF} className="hover:bg-gray-800 cursor-pointer">
+								<Download className="mr-2 h-4 w-4" /> Download Mark List
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={signOut} className="hover:bg-red-900/20 text-red-400 cursor-pointer">
 								<LogOut className="mr-2 h-4 w-4" /> Sign Out
